@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Billing EL Program Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  /* Brand */
+  --navy: #263746;
+  --navy-deep: #1a2744;
+  --navy-soft: #3a4f63;
+  --lavender: #D1D8ED;
+  --lavender-light: #E8ECF5;
+  --lavender-deep: #B8C2DD;
+  --gray-body: #555759;
+  --gray-light: #C4C8CD;
+  --gray-callout: #C4C8CD;
+  --white: #FFFFFF;
+  --cream: #FAFAF7;
+
+  /* Surface system — warm, layered, not white */
+  --bg-page: #ECEFF5;
+  --bg-card: #FFFFFF;
+  --bg-card-soft: #F4F6FB;
+  --bg-elevated: #FFFFFF;
+  --border-soft: #DCE0EB;
+  --border-strong: #C4CADB;
+
+  /* Process colors from brand guide */
+  --p-collect: #D31E1E;
+  --p-prep: #FF8300;
+  --p-calc: #FEBE10;
+  --p-quality: #77BC1F;
+  --p-bill: #2172B7;
+  --p-recovery: #680054;
+
+  /* Status — muted, brand-aligned */
+  --draft-bg: #FFF4D6;
+  --draft-border: #F0B429;
+  --draft-text: #8A6200;
+  --good-bg: #E0EBD4;
+  --good-text: #4A7A1F;
+  --warn-bg: #F5D6D6;
+  --warn-text: #A8302F;
+
+  --shadow-sm: 0 1px 2px rgba(38,55,70,0.06);
+  --shadow-md: 0 4px 12px rgba(38,55,70,0.08);
+  --shadow-lg: 0 8px 24px rgba(38,55,70,0.12);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Roboto', Arial, sans-serif;
+  background: var(--bg-page);
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(209,216,237,0.6) 0%, transparent 45%),
+    radial-gradient(circle at 88% 92%, rgba(209,216,237,0.45) 0%, transparent 50%);
+  background-attachment: fixed;
+  color: var(--gray-body);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ===== HEADER ===== */
+header {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-deep) 100%);
+  color: var(--white);
+  padding: 20px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+header::before {
+  content: "";
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent 0%, rgba(209,216,237,0.04) 100%);
+  pointer-events: none;
+}
+header > * { position: relative; z-index: 1; }
+header h1 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+header .subtitle {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-top: 3px;
+  letter-spacing: 0.5px;
+}
+.header-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.btn {
+  background: var(--lavender);
+  color: var(--navy);
+  border: none;
+  padding: 9px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  font-family: inherit;
+  letter-spacing: 0.2px;
+}
+.btn:hover {
+  background: var(--white);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+.btn.primary {
+  background: var(--white);
+  color: var(--navy);
+}
+.btn.ghost {
+  background: rgba(255,255,255,0.08);
+  color: var(--white);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.btn.ghost:hover {
+  background: rgba(255,255,255,0.18);
+  color: var(--white);
+}
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.9);
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+.toggle input { display: none; }
+.toggle-slider {
+  width: 38px;
+  height: 22px;
+  background: rgba(255,255,255,0.18);
+  border-radius: 11px;
+  position: relative;
+  transition: background 0.2s;
+}
+.toggle-slider::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.toggle input:checked + .toggle-slider {
+  background: var(--draft-border);
+}
+.toggle input:checked + .toggle-slider::after {
+  transform: translateX(16px);
+}
+
+/* ===== TABS ===== */
+.tabs {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-soft);
+  padding: 0 32px;
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  box-shadow: var(--shadow-sm);
+}
+.tab {
+  background: none;
+  border: none;
+  padding: 16px 22px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-body);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+.tab:hover {
+  color: var(--navy);
+  background: var(--bg-card-soft);
+}
+.tab.active {
+  color: var(--navy);
+  border-bottom-color: var(--navy);
+  background: var(--bg-card-soft);
+}
+
+/* ===== MAIN ===== */
+main { padding: 32px; max-width: 1440px; margin: 0 auto; }
+.view { display: none; }
+.view.active { display: block; animation: fadeIn 0.25s ease; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Section heading */
+.section-eyebrow {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--navy-soft);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.section-title {
+  font-size: 22px;
+  color: var(--navy);
+  font-weight: 700;
+  margin-bottom: 24px;
+  letter-spacing: -0.3px;
+}
+
+/* ===== KPI ROW ===== */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.kpi {
+  background: var(--bg-card);
+  border-radius: 10px;
+  padding: 18px 20px;
+  border: 1px solid var(--border-soft);
+  border-left: 4px solid var(--navy);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.kpi:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.kpi::after {
+  content: "";
+  position: absolute;
+  top: -30px; right: -30px;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: var(--lavender-light);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.kpi > * { position: relative; z-index: 1; }
+.kpi-label {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--navy-soft);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.kpi-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+}
+.kpi-sub {
+  font-size: 11px;
+  color: var(--gray-body);
+  margin-top: 6px;
+  letter-spacing: 0.2px;
+}
+.kpi.warn { border-left-color: var(--draft-border); }
+.kpi.warn::after { background: var(--draft-bg); }
+.kpi.good { border-left-color: var(--good-text); }
+.kpi.good::after { background: var(--good-bg); }
+
+/* ===== DAY CARDS ===== */
+.day-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 18px;
+}
+.day-card {
+  background: var(--bg-card);
+  border-radius: 10px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+.day-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--navy), var(--navy-soft));
+  opacity: 0.85;
+}
+.day-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--lavender-deep);
+}
+.day-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.day-card h3 {
+  font-size: 19px;
+  color: var(--navy);
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+.day-card .day-status {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.day-status.full { background: var(--good-bg); color: var(--good-text); }
+.day-status.under { background: var(--draft-bg); color: var(--draft-text); }
+.day-status.over { background: var(--warn-bg); color: var(--warn-text); }
+.day-card-bar {
+  height: 8px;
+  background: var(--lavender-light);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.day-card-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--navy) 0%, var(--navy-soft) 100%);
+  transition: width 0.4s ease;
+  border-radius: 4px;
+}
+.day-card-bar-fill.over {
+  background: linear-gradient(90deg, var(--warn-text) 0%, #C84545 100%);
+}
+.day-card-meta {
+  font-size: 12px;
+  color: var(--gray-body);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.day-card-meta strong {
+  color: var(--navy);
+  font-weight: 700;
+  font-size: 13px;
+}
+.draft-pill {
+  display: inline-block;
+  background: var(--draft-bg);
+  color: var(--draft-text);
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  margin-top: 10px;
+  letter-spacing: 0.3px;
+}
+
+/* ===== WEEK VIEW ===== */
+.week-card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 28px;
+  margin-bottom: 24px;
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-sm);
+}
+.week-card h2 {
+  color: var(--navy);
+  font-size: 20px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--lavender);
+  letter-spacing: -0.2px;
+}
+.week-card h2 .week-sub {
+  font-weight: 400;
+  color: var(--gray-body);
+  font-size: 14px;
+  letter-spacing: 0;
+}
+.week-days {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+}
+
+/* ===== DAY VIEW ===== */
+.day-header {
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-soft) 100%);
+  border-radius: 12px;
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-sm);
+}
+.day-header h2 {
+  color: var(--navy);
+  font-size: 24px;
+  letter-spacing: -0.3px;
+}
+.day-select {
+  padding: 10px 16px;
+  font-size: 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  font-family: inherit;
+  background: var(--bg-card);
+  color: var(--navy);
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.day-select:focus { outline: none; border-color: var(--navy); }
+.day-budget-bar {
+  background: var(--bg-card);
+  border-radius: 10px;
+  padding: 18px 26px;
+  margin-bottom: 22px;
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-sm);
+}
+.budget-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 13px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.budget-stats span strong { color: var(--navy); font-weight: 700; font-size: 14px; }
+.budget-bar {
+  height: 12px;
+  background: var(--lavender-light);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.budget-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--navy) 0%, var(--navy-soft) 100%);
+  transition: width 0.4s ease;
+  border-radius: 6px;
+}
+.budget-bar-fill.over {
+  background: linear-gradient(90deg, var(--warn-text) 0%, #C84545 100%);
+}
+.otj-note {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: var(--lavender-light);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--navy-soft);
+  border-left: 3px solid var(--navy);
+}
+.otj-note strong { color: var(--navy); }
+
+/* ===== MODULE CARDS ===== */
+.module-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.module-card {
+  background: var(--bg-card);
+  border-radius: 10px;
+  padding: 18px 22px;
+  border: 1px solid var(--border-soft);
+  border-left: 4px solid var(--gray-light);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.15s;
+}
+.module-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--lavender-deep);
+}
+.module-card.draft { border-left-color: var(--draft-border); }
+.module-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.module-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy);
+  flex: 1;
+  min-width: 240px;
+  letter-spacing: -0.1px;
+  line-height: 1.4;
+}
+.module-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.ct-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: var(--lavender);
+  color: var(--navy);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.mins-pill {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--navy);
+  background: var(--lavender-light);
+  padding: 4px 12px;
+  border-radius: 12px;
+  letter-spacing: 0.3px;
+  border: 1px solid var(--lavender-deep);
+}
+.module-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-soft);
+}
+.module-field {
+  font-size: 12.5px;
+}
+.module-field strong {
+  display: block;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  color: var(--navy);
+  margin-bottom: 5px;
+  font-weight: 700;
+}
+.module-field .field-content {
+  color: var(--gray-body);
+  line-height: 1.55;
+}
+.module-notes {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-soft);
+}
+.module-notes textarea {
+  width: 100%;
+  min-height: 54px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 12.5px;
+  resize: vertical;
+  background: var(--bg-card-soft);
+  color: var(--gray-body);
+  transition: all 0.15s;
+}
+.module-notes textarea:focus {
+  outline: none;
+  border-color: var(--navy);
+  background: var(--bg-card);
+  box-shadow: 0 0 0 3px rgba(38,55,70,0.08);
+}
+.notes-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--navy);
+  font-weight: 700;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.notes-status {
+  color: var(--good-text);
+  font-size: 10px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+.notes-status.show { opacity: 1; }
+
+/* Stakeholder mode */
+body.stakeholder .module-notes,
+body.stakeholder .header-controls .editor-only,
+body.stakeholder .import-banner { display: none !important; }
+body.stakeholder header { background: linear-gradient(135deg, var(--navy-deep) 0%, #0F1A2E 100%); }
+body.stakeholder .day-card { cursor: default; }
+body.stakeholder .day-card:hover { transform: none; box-shadow: var(--shadow-sm); border-color: var(--border-soft); }
+
+/* Print */
+@media print {
+  header, .tabs, .header-controls, .module-notes, .import-banner { display: none !important; }
+  body { background: white; background-image: none; }
+  main { padding: 0; max-width: 100%; }
+  .module-card, .day-budget-bar, .day-header, .kpi, .day-card, .week-card { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; }
+}
+
+/* Import banner */
+.import-banner {
+  background: linear-gradient(135deg, var(--lavender-light) 0%, #DDE3F2 100%);
+  border: 1px solid var(--lavender-deep);
+  border-radius: 10px;
+  padding: 14px 20px;
+  margin-bottom: 24px;
+  font-size: 12.5px;
+  color: var(--navy-soft);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+}
+.import-banner strong { color: var(--navy); }
+.import-controls { display: flex; gap: 8px; }
+.import-banner .btn { background: var(--white); }
+.import-banner .btn.primary { background: var(--navy); color: var(--white); }
+.import-banner .btn.primary:hover { background: var(--navy-soft); color: var(--white); }
+#fileInput { display: none; }
+
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--gray-body);
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Billing EL Program Dashboard</h1>
+    <div class="subtitle">Days 3–10 · Conservice Billing Entry Level</div>
+  </div>
+  <div class="header-controls">
+    <label class="toggle">
+      <span>Stakeholder View</span>
+      <input type="checkbox" id="stakeholderToggle">
+      <span class="toggle-slider"></span>
+    </label>
+    <button class="btn ghost editor-only" onclick="document.getElementById('fileInput').click()">Import xlsx</button>
+    <button class="btn ghost" onclick="window.print()">Print</button>
+  </div>
+  <input type="file" id="fileInput" accept=".xlsx" onchange="handleFile(event)">
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-view="overview" onclick="showView('overview')">Overview</button>
+  <button class="tab" data-view="week" onclick="showView('week')">By Week</button>
+  <button class="tab" data-view="day" onclick="showView('day')">By Day</button>
+</nav>
+
+<main>
+  <div class="import-banner editor-only" id="importBanner">
+    <span><strong>Data source:</strong> <span id="dataSource">Built-in scaffold (88 modules)</span></span>
+    <div class="import-controls">
+      <button class="btn primary" onclick="document.getElementById('fileInput').click()">Import Program_Dashboard.xlsx</button>
+      <button class="btn" onclick="resetToBuiltIn()">Reset to scaffold</button>
+    </div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div id="view-overview" class="view active">
+    <div class="kpi-row" id="kpiRow"></div>
+    <div class="day-grid" id="dayGrid"></div>
+  </div>
+
+  <!-- WEEK -->
+  <div id="view-week" class="view">
+    <div id="weekContent"></div>
+  </div>
+
+  <!-- DAY -->
+  <div id="view-day" class="view">
+    <div class="day-header">
+      <h2>Day View</h2>
+      <select id="daySelect" class="day-select" onchange="renderDay()">
+        <option value="3">Day 3</option>
+        <option value="4">Day 4</option>
+        <option value="5">Day 5</option>
+        <option value="6">Day 6</option>
+        <option value="7">Day 7</option>
+        <option value="8">Day 8</option>
+        <option value="9">Day 9</option>
+        <option value="10">Day 10</option>
+      </select>
+    </div>
+    <div id="dayContent"></div>
+  </div>
+</main>
+
+<script>
+// ===== BUILT-IN SCAFFOLD DATA (88 modules) =====
+const SCAFFOLD = [
+  {d:3,n:"Welcome & Billing Overview",m:15,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"",o:"I understand what Conservice does, what the billing role expects of me, how I'm supposed to behave during training, and how to ask good questions when I'm stuck.",dec:"Which of the BOB tenets will be hardest for me to live out and why? When do I try to solve a problem on my own versus asking for help? What does 'owning the experience' look like for me personally?",sys:"Zoom",nt:"",dr:0},
+  {d:3,n:"The Big Picture: 6-Step Billing Lifecycle",m:90,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"",o:"I understand the 6-step billing lifecycle, how my daily work connects to client outcomes, what my performance will be measured by, and why every step depends on the one before it.",dec:"Which BOB tenet will stretch me most and why? Who ultimately pays for our services — the resident or the property manager? Why is chat responsiveness tied to client outcomes, not just professionalism? What is missing from this question before I ask it? Which of the five core skills am I strongest in, and which do I need to work on?",sys:"Zoom, HRX",nt:"",dr:0},
+  {d:3,n:"Tool Navigation",m:45,c:"Blended",a1:"Facilitator Guide",a2:"eLearning Module",a3:"Knowledge Base Article",o:"I know where each system lives in the billing workflow, how to open and navigate a task in Skywalker, how to pull up a bill in Foxit, and where provider data gets entered in Fusion — so I don't get lost on my first real task.",dec:"Which system do I open first for this task? Am I in the right tab in Skywalker before I start entering data? Does this bill in Foxit match the account and cycle I'm working on? Is there a CSR Alert I need to read before I can move forward?",sys:"Skywalker, Foxit, Fusion 2.0, Email/Inbox, Knowledge Base",nt:"",dr:0},
+  {d:3,n:"Inbox & Macro Setup",m:30,c:"ILT",a1:"Job Aid",a2:"Facilitator Guide",a3:"",o:"I can configure my Outlook/Gmail inbox with the folders, filters, and macros I'll use every day so my email doesn't become a bottleneck.",dec:"Which emails get filtered automatically vs. need my attention? Which macros do I set up first?",sys:"Email/Inbox, Outlook or Gmail",nt:"Setup task — pair with IT/onboarding checklist",dr:1},
+  {d:3,n:"Intro to Provider Bills: Reading Key Bill Elements",m:40,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"Sample Bills",o:"I can identify the key elements on a provider bill (account number, service period, charges, usage) and know which fields matter for prep work.",dec:"Is this the right bill for the right cycle? Which charges are billable to residents vs. property?",sys:"Foxit, Provider portals",nt:"Pair with sample bills from real providers",dr:1},
+  {d:3,n:"Distinguishing Similar-Looking Values on a Bill",m:30,c:"ILT",a1:"Activity",a2:"Sample Bills",a3:"",o:"I can tell the difference between values that look similar on a provider bill (current charges vs. previous balance, total due vs. amount billed) so I enter the right number.",dec:"Which value am I supposed to enter into Fusion? Does the number on the bill match what I'm about to type?",sys:"Foxit, Fusion 2.0",nt:"High-repetition activity recommended",dr:1},
+  {d:3,n:"Prep — Fusion 2.0 & Spreadsheet Simulations",m:60,c:"Simulation",a1:"Facilitator Guide",a2:"Job Aid",a3:"",o:"I can complete a prep task in Fusion 2.0 and on a holding spreadsheet, knowing when to use which and how the two connect.",dec:"Fusion or spreadsheet for this prop? Did I check the Fusion notes before entering data?",sys:"Fusion 2.0, Spreadsheets, YODA",nt:"",dr:1},
+  {d:3,n:"Data Entry Accuracy: Common Failure Points & QC Habits",m:30,c:"ILT",a1:"Job Aid",a2:"Facilitator Guide",a3:"",o:"I know the top sources of data entry errors in Fusion 2.0 and the habits that catch them before they leave my desk.",dec:"Did I double-check this entry? What's my self-QC habit for each field?",sys:"Fusion 2.0",nt:"Ties to AQC 80% target",dr:1},
+  {d:3,n:"NB / NUFB / State Regulations",m:15,c:"ILT",a1:"Facilitator Guide",a2:"Reference Doc",a3:"",o:"I know what NB and NUFB mean and where state regulations affect what we can and can't bill.",dec:"Is this property in a regulated state? Does this charge comply?",sys:"Knowledge Base, YODA",nt:"Awareness-level only on Day 3",dr:1},
+  {d:3,n:"Client Communication — Introduction to Professional Email & Why It Matters",m:30,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"Mock Email Template",o:"I understand why client communication matters at Conservice, the elements of a professional email, and when to ask for help instead of guessing.",dec:"Is this email professional enough to send? Do I need to loop in my lead?",sys:"Email, Knowledge Base",nt:"Foundation for Day 4+ mock email practice",dr:1},
+  {d:3,n:"EOD 3 Review",m:15,c:"ILT",a1:"Facilitator Guide",a2:"",a3:"",o:"I can name the 6 lifecycle steps, the 6 core systems, and the BOB tenets without prompting.",dec:"What did I learn today that I need to revisit tonight?",sys:"Zoom",nt:"Daily close-out",dr:1},
+
+  {d:4,n:"Day 4 Morning Review",m:15,c:"ILT",a1:"Facilitator Guide",a2:"",a3:"",o:"I can recall the key Day 3 concepts and ask questions on anything that didn't stick.",dec:"What from yesterday do I need clarification on?",sys:"Zoom",nt:"Daily warm-up",dr:1},
+  {d:4,n:"Intro to Skywalker",m:45,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"Job Aid",o:"I can log into Skywalker, navigate the main views, and understand how it differs from YODA.",dec:"Skywalker or YODA for this task?",sys:"Skywalker",nt:"",dr:1},
+  {d:4,n:"Bill Methods & Bill Setup — High-Level Introduction",m:45,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"",o:"I understand the major bill methods at a high level and know where bill setup lives in the system.",dec:"Which method applies to this property?",sys:"YODA, Skywalker",nt:"Depth comes Day 6-7",dr:1},
+  {d:4,n:"Regulations",m:20,c:"ILT",a1:"Facilitator Guide",a2:"Reference Doc",a3:"",o:"I know the categories of state regulations that affect billing and where to look them up.",dec:"Is this state regulated? Where do I check?",sys:"Knowledge Base",nt:"",dr:1},
+  {d:4,n:"Bill Dates Tab (2 Part)",m:60,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"Dev YODA Practice",o:"I can correctly set bill dates in YODA — rent dates, Conservice utility dates, post month, and total date range — and I know when to flag a date that doesn't look right.",dec:"Does the post month match the cycle? Are rent and Conservice dates aligned? Do I need to escalate this date setup?",sys:"YODA, Dev YODA",nt:"Krista pending on Dev YODA property access",dr:0},
+  {d:4,n:"Future Cycle Calculator (FCC)",m:30,c:"ILT",a1:"Facilitator Guide",a2:"Job Aid",a3:"",o:"I know what FCC is, what it does, and that I'll learn the mechanics in Day 8 Exceptions.",dec:"Awareness only — when would I use FCC?",sys:"YODA",nt:"Mechanics deferred to Day 8",dr:1},
+  {d:4,n:"MIMO: What It Is and Where It Falls in the Workflow",m:30,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"",o:"I understand what MIMO (Move-In/Move-Out) is and where it fits in the billing workflow.",dec:"Is this a MIMO scenario? What does the cycle look like?",sys:"YODA, Skywalker",nt:"Deeper dive Day 5/7",dr:1},
+  {d:4,n:"Scenario — Troubleshoot a Bill Dates Task",m:30,c:"Scenario",a1:"Facilitator Guide",a2:"Scenario Card",a3:"",o:"I can work through a bill dates scenario and identify what's wrong before fixing it.",dec:"What's wrong here? What's my next move?",sys:"YODA, Skywalker",nt:"",dr:1},
+  {d:4,n:"Simulation — SW Bill Dates Task Error / Manual Bill Dates Exception",m:45,c:"Simulation",a1:"Facilitator Guide",a2:"Job Aid",a3:"",o:"I can resolve a Skywalker bill dates task error and a manual bill dates exception in YODA.",dec:"What's the exception telling me? What's the fix?",sys:"Skywalker, YODA",nt:"",dr:1},
+  {d:4,n:"Client Communication — Grading Rubric, BOB Tenets, Mock Emails",m:30,c:"Activity",a1:"Facilitator Guide",a2:"Rubric",a3:"Mock Email Set",o:"I can write a professional client email and self-assess it against the grading rubric tied to BOB tenets.",dec:"Does my email meet the rubric? Which tenet does it reflect?",sys:"Email",nt:"Rubric introduced here, used Day 5-10",dr:1},
+  {d:4,n:"EOD 4 Review",m:15,c:"ILT",a1:"Facilitator Guide",a2:"",a3:"",o:"I can summarize bill dates, FCC awareness, and Skywalker basics from today.",dec:"What do I revisit tonight?",sys:"Zoom",nt:"1.5 practice / 1 hr admin time in afternoon",dr:1},
+
+  {d:5,n:"Day 5 Morning Review",m:15,c:"ILT",a1:"Facilitator Guide",a2:"",a3:"",o:"I can recall Day 4 concepts and ask follow-up questions.",dec:"What needs clarification?",sys:"Zoom",nt:"",dr:1},
+  {d:5,n:"Billing Process Overview",m:45,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"",o:"I can walk through the end-to-end billing process and place each Day 5 topic within it.",dec:"Where in the process am I right now?",sys:"YODA, Skywalker",nt:"Anchors UA and Stats discussions",dr:1},
+  {d:5,n:"MIMO & Stats Tabs — Introduction",m:45,c:"ILT",a1:"Facilitator Guide",a2:"Job Aid",a3:"",o:"I can navigate the MIMO and Stats tabs in YODA and explain what each one drives.",dec:"Are the stats correct? Did MIMO process cleanly?",sys:"YODA",nt:"",dr:1},
+  {d:5,n:"Utility Amounts Tab",m:60,c:"ILT",a1:"Facilitator Guide",a2:"Job Aid",a3:"Simulation",o:"I can verify and enter admin/flat amounts, RUBS provider amounts, and check frequency in the UA tab.",dec:"Does this UA entry match the bill? Is the frequency right?",sys:"YODA, Fusion 2.0",nt:"",dr:1},
+  {d:5,n:"Inputting Provider Amounts",m:45,c:"Simulation",a1:"Facilitator Guide",a2:"Job Aid",a3:"",o:"I can input provider amounts from a bill into UA correctly the first time.",dec:"Right amount? Right line? Right frequency?",sys:"YODA, Fusion 2.0, Foxit",nt:"",dr:1},
+  {d:5,n:"Comparing UA Admin Amounts to Bill Setup / Fee Screen",m:30,c:"ILT",a1:"Facilitator Guide",a2:"Job Aid",a3:"",o:"I can compare UA admin amounts to Bill Setup and the Fee Screen and spot mismatches.",dec:"Do these three agree? If not, which is right?",sys:"YODA",nt:"",dr:1},
+  {d:5,n:"What Good Documentation Looks Like",m:20,c:"ILT",a1:"Facilitator Guide",a2:"Example Notes",a3:"",o:"I know what a good Fusion/YODA note looks like, why it matters downstream, and the standards I'm expected to meet.",dec:"Will the next person reading this note know what I did and why?",sys:"YODA, Fusion 2.0",nt:"Sets foundation for exception notes Day 8",dr:1},
+  {d:5,n:"Scenario — Base Fee / Service Fee Change or Unusual Cycle Length",m:30,c:"Scenario",a1:"Facilitator Guide",a2:"Scenario Card",a3:"",o:"I can work through a scenario involving a fee change or odd cycle and identify what to flag.",dec:"What changed? Why? Who needs to know?",sys:"YODA, Skywalker",nt:"",dr:1},
+  {d:5,n:"Simulation — SW UA Task Error / Manual UA Exception",m:45,c:"Simulation",a1:"Facilitator Guide",a2:"Job Aid",a3:"",o:"I can resolve a Skywalker UA task and a manual UA exception in YODA.",dec:"What does the exception say? What's the fix?",sys:"Skywalker, YODA",nt:"",dr:1},
+  {d:5,n:"Client Communication — Mock Emails, BOB Tenets",m:30,c:"Activity",a1:"Facilitator Guide",a2:"Rubric",a3:"Mock Email Set",o:"I can write a Day 5-level client email and self-grade against the rubric.",dec:"Does this email pass the rubric?",sys:"Email",nt:"",dr:1},
+  {d:5,n:"EOD 5 Review",m:15,c:"ILT",a1:"Facilitator Guide",a2:"",a3:"",o:"I can summarize UA, MIMO/Stats, and documentation standards.",dec:"What needs another pass tomorrow?",sys:"Zoom",nt:"",dr:1},
+
+  {d:6,n:"Day 6 Morning Review",m:15,c:"ILT",a1:"Facilitator Guide",a2:"",a3:"",o:"I can recall Day 5 concepts.",dec:"Open questions?",sys:"Zoom",nt:"1.5 practice / 1 hr admin time in afternoon",dr:1},
+  {d:6,n:"Meter Concepts: How Submetering Works & Why It Matters",m:30,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"",o:"I understand what submetering is, how it differs from RUBS, and why properties choose it.",dec:"Is this a submetered property? What does that mean for billing?",sys:"Skywalker, YODA",nt:"",dr:1},
+  {d:6,n:"Submetered Billing Methods & Math",m:60,c:"ILT",a1:"Facilitator Guide",a2:"Job Aid",a3:"Math Worksheet",o:"I can perform the math behind submetered billing — rates, usage, expense allocation.",dec:"Did the math come out right? Does this rate match the contract?",sys:"YODA, Skywalker, Calculator",nt:"",dr:1},
+  {d:6,n:"Connecting Meters to the Workflow",m:30,c:"ILT",a1:"Facilitator Guide",a2:"Job Aid",a3:"",o:"I can place meter steps within the broader prep/calc workflow.",dec:"Where do meters fit in this property's cycle?",sys:"YODA, Skywalker",nt:"",dr:1},
+  {d:6,n:"What Do You Need to Do — Step-by-Step Meter Review",m:45,c:"Job Aid",a1:"Facilitator Guide",a2:"Step-by-Step Doc",a3:"",o:"I can walk through a meter review checklist start to finish.",dec:"Did I check every step? Anything missing?",sys:"YODA, Skywalker, ABP",nt:"",dr:1},
+  {d:6,n:"Verifying System Estimations & Initial Meter Reads",m:30,c:"ILT",a1:"Facilitator Guide",a2:"Job Aid",a3:"",o:"I can verify system-generated estimations and check initial meter reads before importing.",dec:"Does the estimation make sense? Are the reads in range?",sys:"YODA, ABP, Construct",nt:"",dr:1},
+  {d:6,n:"Reading & Interpreting the Prop Cons / V3 Report",m:30,c:"ILT",a1:"Facilitator Guide",a2:"Sample Report",a3:"",o:"I can read the Property Consumption / V3 report and pull out what matters for troubleshooting.",dec:"What anomalies do I see? What's normal here?",sys:"Skywalker, YODA",nt:"",dr:1},
+  {d:6,n:"Importing with ABP",m:30,c:"Simulation",a1:"Facilitator Guide",a2:"Job Aid",a3:"",o:"I can import initial reads and meter reads using ABP.",dec:"Right import file? Right property? Right post month?",sys:"ABP, YODA",nt:"",dr:1},
+  {d:6,n:"Meter Estimation Practice: High-Repetition Scenarios",m:45,c:"Activity",a1:"Facilitator Guide",a2:"Scenario Bank",a3:"",o:"I can estimate meters across multiple scenarios with consistent accuracy.",dec:"Which estimation method fits this scenario?",sys:"YODA, Skywalker",nt:"Repetition for fluency",dr:1},
+  {d:6,n:"Scenario — System / Mechanical Setup for Troubleshooting",m:30,c:"Scenario",a1:"Facilitator Guide",a2:"Scenario Card",a3:"",o:"I can diagnose meter issues stemming from system or mechanical setup.",dec:"Setup issue or read issue?",sys:"YODA, Skywalker",nt:"",dr:1},
+  {d:6,n:"Simulation — SW Meter Task Error / Manual Meter Exception",m:45,c:"Simulation",a1:"Facilitator Guide",a2:"Job Aid",a3:"",o:"I can resolve a Skywalker meter task and a manual meter exception.",dec:"What's the exception? What's the fix?",sys:"Skywalker, YODA",nt:"",dr:1},
+  {d:6,n:"Client Communication — Mock Emails, BOB Tenets",m:30,c:"Activity",a1:"Facilitator Guide",a2:"Rubric",a3:"Mock Email Set",o:"I can write a meter-related client email and self-grade.",dec:"Does this explain the meter issue clearly?",sys:"Email",nt:"",dr:1},
+  {d:6,n:"EOD 6 Review",m:15,c:"ILT",a1:"Facilitator Guide",a2:"",a3:"",o:"I can summarize meters: concepts, math, workflow.",dec:"What's still fuzzy?",sys:"Zoom",nt:"",dr:1},
+
+  {d:7,n:"Day 7 Morning Review",m:15,c:"ILT",a1:"Facilitator Guide",a2:"",a3:"",o:"I can recall meter concepts from Day 6.",dec:"Open questions?",sys:"Zoom",nt:"",dr:1},
+  {d:7,n:"MIMO & Stats — Deeper Discussion",m:45,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"",o:"I can interpret nuanced MIMO and stats situations beyond the basics.",dec:"Edge case or standard? What's the right call?",sys:"YODA, Skywalker",nt:"",dr:1},
+  {d:7,n:"Depths of Billing Methods & Math",m:75,c:"ILT",a1:"Facilitator Guide",a2:"Job Aid",a3:"Math Worksheet",o:"I can apply billing methods at depth — RUBS variations, submetered nuances, factored occupancy, etc.",dec:"Which method gives the right resident charge here?",sys:"YODA, Skywalker",nt:"",dr:1},
+  {d:7,n:"Rent-Only Bills",m:30,c:"ILT",a1:"Facilitator Guide",a2:"Job Aid",a3:"",o:"I can handle a rent-only billing scenario.",dec:"Is rent the only charge here? Any utilities to add?",sys:"YODA, Skywalker",nt:"",dr:1},
+  {d:7,n:"Ramping",m:30,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"Job Aid",o:"I understand what ramping is, when it applies, and how to set it up.",dec:"Is this property ramping? At what rate?",sys:"YODA, Skywalker",nt:"",dr:1},
+  {d:7,n:"Billing Methods Application: Calculation Practice Activity",m:45,c:"Activity",a1:"Facilitator Guide",a2:"Practice Set",a3:"",o:"I can calculate resident charges across multiple billing methods accurately.",dec:"Did my math match the expected output?",sys:"Calculator, YODA",nt:"Repetition for fluency",dr:1},
+  {d:7,n:"Scenario — Legal Dashboard Task",m:30,c:"Scenario",a1:"Facilitator Guide",a2:"Scenario Card",a3:"",o:"I can work through a legal dashboard task and identify what needs escalation.",dec:"Legal flag — escalate or proceed?",sys:"YODA, Legal Dashboard",nt:"",dr:1},
+  {d:7,n:"Simulation — SW VA Meters with FCC / Manual TX Meters",m:60,c:"Simulation",a1:"Facilitator Guide",a2:"Job Aid",a3:"",o:"I can complete a Virginia meters task with FCC and a Texas manual meters task.",dec:"State-specific regulation triggers — what changes?",sys:"Skywalker, YODA, ABP",nt:"",dr:1},
+  {d:7,n:"Client Communication — Meter Troubleshooting Mock Email",m:30,c:"Activity",a1:"Facilitator Guide",a2:"Rubric",a3:"Mock Email Set",o:"I can write a meter troubleshooting email to a client and self-grade.",dec:"Did I explain the issue clearly without jargon?",sys:"Email",nt:"",dr:1},
+  {d:7,n:"EOD 7 Review",m:15,c:"ILT",a1:"Facilitator Guide",a2:"",a3:"",o:"I can summarize billing methods, ramping, and rent-only.",dec:"Open questions before the harder Day 8 content?",sys:"Zoom",nt:"",dr:1},
+
+  {d:8,n:"Day 8 Morning Review",m:15,c:"ILT",a1:"Facilitator Guide",a2:"",a3:"",o:"I can recall Day 7 methods.",dec:"Open questions?",sys:"Zoom",nt:"",dr:1},
+  {d:8,n:"Utility Messages",m:30,c:"ILT",a1:"Facilitator Guide",a2:"Job Aid",a3:"",o:"I can verify and update utility messages on resident bills.",dec:"Is this message current? Correct for this property?",sys:"YODA, Skywalker",nt:"",dr:1},
+  {d:8,n:"Exceptions & Tasks",m:60,c:"ILT",a1:"Facilitator Guide",a2:"Job Aid",a3:"Reference List",o:"I can read, interpret, and resolve YODA exceptions and Skywalker tasks.",dec:"What is this exception telling me? Resolve, escalate, or hand back?",sys:"YODA, Skywalker",nt:"FCC mechanics live here",dr:1},
+  {d:8,n:"Exception Note Standards: Good Note / Bad Note Deep Dive",m:30,c:"ILT",a1:"Facilitator Guide",a2:"Example Notes",a3:"",o:"I can write an exception note that meets standards and explain why bad notes cause downstream pain.",dec:"Will this note hold up at QC?",sys:"YODA, Skywalker",nt:"Builds on Day 5 documentation",dr:1},
+  {d:8,n:"Reports",m:45,c:"ILT",a1:"Facilitator Guide",a2:"Sample Reports",a3:"",o:"I can pull and interpret the core reports I'll use daily (Property Consumption, Recovery QC, Vacant QC, Billing Summary).",dec:"Which report answers this question?",sys:"Skywalker, YODA",nt:"",dr:1},
+  {d:8,n:"Critical Thinking",m:30,c:"ILT",a1:"Facilitator Guide",a2:"Discussion Prompts",a3:"",o:"I can apply critical thinking to ambiguous billing scenarios instead of pattern-matching.",dec:"Am I assuming or verifying?",sys:"Zoom",nt:"Conceptual, soft skill",dr:1},
+  {d:8,n:"Prebill",m:45,c:"ILT",a1:"Facilitator Guide",a2:"Job Aid",a3:"Simulation",o:"I can generate a prebill, review it, and send it to the property for approval.",dec:"Prebill required for this prop? Does it look right?",sys:"Skywalker, YODA, Email",nt:"",dr:1},
+  {d:8,n:"Formative Check: Pre-Skills Eval Self-Assessment",m:30,c:"Assessment",a1:"Self-Assessment Doc",a2:"Facilitator Guide",a3:"",o:"I know where I stand against the Day 9 Skills Eval criteria and what I need to study tonight.",dec:"What are my weak areas?",sys:"Self-assessment",nt:"Pre-eval calibration",dr:1},
+  {d:8,n:"Scenario — Recovery Issue or U Exception",m:30,c:"Scenario",a1:"Facilitator Guide",a2:"Scenario Card",a3:"",o:"I can diagnose a recovery issue or U exception.",dec:"What's the root cause?",sys:"YODA, Skywalker",nt:"",dr:1},
+  {d:8,n:"Simulation — SW Recovery Task / Manual U Exception",m:45,c:"Simulation",a1:"Facilitator Guide",a2:"Job Aid",a3:"",o:"I can resolve a Skywalker recovery task and a manual U exception.",dec:"What's the exception saying?",sys:"Skywalker, YODA",nt:"",dr:1},
+  {d:8,n:"Client Communication — Prebill Client Response Mock Email",m:30,c:"Activity",a1:"Facilitator Guide",a2:"Rubric",a3:"Mock Email Set",o:"I can respond to a client's prebill questions in writing.",dec:"Does my response answer the question and protect the relationship?",sys:"Email",nt:"",dr:1},
+  {d:8,n:"EOD 8 Review",m:15,c:"ILT",a1:"Facilitator Guide",a2:"",a3:"",o:"I can summarize exceptions, prebill, and reports.",dec:"What do I need to drill tonight before the eval?",sys:"Zoom",nt:"",dr:1},
+
+  {d:9,n:"Day 9 Morning Review — Structured Eval Prep Review",m:30,c:"ILT",a1:"Facilitator Guide",a2:"Review Doc",a3:"",o:"I'm calibrated on the eval format, scope, and expectations.",dec:"Where do I focus my last review minutes?",sys:"Zoom",nt:"Targeted pre-eval review",dr:1},
+  {d:9,n:"Billing Methodologies Math Practice",m:45,c:"Activity",a1:"Practice Set",a2:"Facilitator Guide",a3:"",o:"I can run billing math accurately under time pressure.",dec:"Right method, right inputs, right output.",sys:"Calculator, YODA",nt:"",dr:1},
+  {d:9,n:"PMR Reads Activity",m:30,c:"Activity",a1:"Facilitator Guide",a2:"Practice Set",a3:"",o:"I can complete a Property Meter Read activity correctly.",dec:"Reads in range? Estimations valid?",sys:"Skywalker, YODA",nt:"",dr:1},
+  {d:9,n:"Prebill Activity",m:30,c:"Activity",a1:"Facilitator Guide",a2:"Practice Set",a3:"",o:"I can generate and review a prebill in a practice scenario.",dec:"Ready to send?",sys:"Skywalker, YODA, Email",nt:"",dr:1},
+  {d:9,n:"Bill Dates & FCC Activity",m:30,c:"Activity",a1:"Facilitator Guide",a2:"Practice Set",a3:"",o:"I can set bill dates including FCC scenarios.",dec:"FCC needed here?",sys:"YODA, Skywalker",nt:"",dr:1},
+  {d:9,n:"Portfolio Prioritization Activity",m:30,c:"Activity",a1:"Facilitator Guide",a2:"Scenario Set",a3:"",o:"I can prioritize a sample portfolio by goal date, complexity, and risk.",dec:"What do I touch first today?",sys:"YODA, Skywalker, Calendar",nt:"",dr:1},
+  {d:9,n:"Skills Evaluation",m:120,c:"Assessment",a1:"Eval Materials",a2:"Facilitator Guide",a3:"Rubric",o:"I demonstrate at or above 80% on the Skills Evaluation, confirming I'm ready to move into nesting.",dec:"Demonstrate competence under eval conditions.",sys:"YODA, Skywalker, Fusion 2.0",nt:"Pass threshold = 80%",dr:1},
+  {d:9,n:"Remediation Path for Learners Below 80%",m:30,c:"ILT",a1:"Remediation Plan",a2:"Facilitator Guide",a3:"",o:"If I scored below 80%, I know my remediation plan and timeline. If I scored at/above, I support peers.",dec:"What's my next step?",sys:"Eval rubric",nt:"Branch-conditional",dr:1},
+  {d:9,n:"What Happens After I Submit a Property for QC?",m:30,c:"ILT",a1:"Facilitator Guide",a2:"Flow Diagram",a3:"",o:"I know the QC bin lifecycle, what handbacks look like, and how to respond when one comes back.",dec:"Handback or pass-through?",sys:"YODA, Skywalker",nt:"",dr:1},
+  {d:9,n:"Client Communication — Mock Emails",m:30,c:"Activity",a1:"Facilitator Guide",a2:"Rubric",a3:"Mock Email Set",o:"I can handle eval-level client communication.",dec:"Does this meet the rubric under eval conditions?",sys:"Email",nt:"",dr:1},
+  {d:9,n:"EOD 9 Review",m:15,c:"ILT",a1:"Facilitator Guide",a2:"",a3:"",o:"I know how I did on the eval and what comes next.",dec:"Ready for Day 10?",sys:"Zoom",nt:"",dr:1},
+
+  {d:10,n:"Day 10 Morning Review",m:15,c:"ILT",a1:"Facilitator Guide",a2:"",a3:"",o:"I can recall the eval outcomes and any remediation steps.",dec:"Open questions?",sys:"Zoom",nt:"",dr:1},
+  {d:10,n:"Customer Service Fundamentals",m:120,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"Participant Workbook",o:"I understand the CSR department's role, how my billing work upstream affects CSR downstream, how to use CSR Alerts and Billing Reminders correctly, and the urgency standards for EWOK tickets.",dec:"Does this need a CSR Alert? What's the right urgency threshold (24/48/5-day)? Reminder, Alert, or direct CSR contact?",sys:"EWOK, YODA, Skywalker, Email, Knowledge Base",nt:"Built, multiple review rounds complete",dr:0},
+  {d:10,n:"Exporting",m:60,c:"ILT",a1:"Facilitator Guide",a2:"Job Aid",a3:"Simulation",o:"I can complete the export step that pushes charges to property systems via EDE.",dec:"Right export settings? Right post month?",sys:"YODA, Skywalker, Obiwan",nt:"Step 06 of lifecycle",dr:1},
+  {d:10,n:"Portfolio Management",m:45,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"Job Aid",o:"I can manage my portfolio: track goal dates, prioritize, communicate proactively with clients.",dec:"What needs my attention first?",sys:"YODA, Skywalker, Calendar, Email",nt:"",dr:1},
+  {d:10,n:"A Day in the Life of a Billing Manager",m:45,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"",o:"I have a realistic picture of a billing manager's day and the rhythm I'm stepping into.",dec:"How will I structure my own day?",sys:"Zoom",nt:"Sets up nesting expectations",dr:1},
+  {d:10,n:"Stress Management & Daily Prioritization",m:30,c:"ILT",a1:"Facilitator Guide",a2:"Discussion Prompts",a3:"",o:"I have strategies for managing competing priorities and stress during high-volume periods.",dec:"When I feel overwhelmed, what's my first move?",sys:"N/A",nt:"Soft skill, wellness",dr:1},
+  {d:10,n:"Program Wrap-Up & Nesting Preview",m:30,c:"ILT",a1:"Facilitator Guide",a2:"Nesting Handout",a3:"",o:"I know what nesting looks like, who my nesting support is, and what's expected of me in week 3+.",dec:"What do I bring to my first nesting day?",sys:"Zoom, Handout",nt:"Transition to OTJ",dr:1},
+  {d:10,n:"Client Communication — Final Mock Emails",m:30,c:"Activity",a1:"Facilitator Guide",a2:"Rubric",a3:"Mock Email Set",o:"I can write Day-10-level client emails and self-assess against the rubric one final time.",dec:"Does this clear the rubric bar consistently?",sys:"Email",nt:"",dr:1},
+  {d:10,n:"EOD 10",m:15,c:"ILT",a1:"Facilitator Guide",a2:"",a3:"",o:"I can close out the program and move forward into nesting with clarity.",dec:"What's my Day 11 plan?",sys:"Zoom",nt:"Program close",dr:1},
+];
+
+const DAY_BUDGET = 540;
+let modules = JSON.parse(JSON.stringify(SCAFFOLD));
+let notes = {};
+
+// ===== STORAGE =====
+async function loadNotes() {
+  try {
+    const result = await window.storage.get('billing-el-notes');
+    if (result && result.value) notes = JSON.parse(result.value);
+  } catch (e) {
+    // first load, no notes yet
+    notes = {};
+  }
+}
+async function saveNotes() {
+  try {
+    await window.storage.set('billing-el-notes', JSON.stringify(notes));
+  } catch (e) {
+    console.error('Could not save notes:', e);
+  }
+}
+
+function moduleKey(mod, idx) {
+  return `d${mod.d}-${idx}-${mod.n.substring(0, 30)}`;
+}
+
+// ===== VIEWS =====
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`view-${name}`).classList.add('active');
+  document.querySelector(`.tab[data-view="${name}"]`).classList.add('active');
+  if (name === 'overview') renderOverview();
+  if (name === 'week') renderWeek();
+  if (name === 'day') renderDay();
+}
+
+function dayStatus(scheduled, budget) {
+  if (scheduled > budget) return 'over';
+  if (scheduled >= budget * 0.9) return 'full';
+  return 'under';
+}
+
+function renderOverview() {
+  const days = [3,4,5,6,7,8,9,10];
+  let totalSched = 0, totalDraft = 0, totalMods = modules.length;
+
+  days.forEach(d => {
+    const dayMods = modules.filter(m => m.d === d);
+    totalSched += dayMods.reduce((s, m) => s + (m.m || 0), 0);
+    totalDraft += dayMods.filter(m => m.dr).length;
+  });
+
+  const totalBudget = days.length * DAY_BUDGET;
+  const fillPct = ((totalSched / totalBudget) * 100).toFixed(1);
+
+  document.getElementById('kpiRow').innerHTML = `
+    <div class="kpi">
+      <div class="kpi-label">Total Modules</div>
+      <div class="kpi-value">${totalMods}</div>
+      <div class="kpi-sub">Days 3 – 10</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Scheduled</div>
+      <div class="kpi-value">${totalSched} min</div>
+      <div class="kpi-sub">of ${totalBudget} min budget</div>
+    </div>
+    <div class="kpi ${fillPct >= 90 ? 'good' : 'warn'}">
+      <div class="kpi-label">Program Fill</div>
+      <div class="kpi-value">${fillPct}%</div>
+      <div class="kpi-sub">across all 8 days</div>
+    </div>
+    <div class="kpi warn">
+      <div class="kpi-label">Draft Modules</div>
+      <div class="kpi-value">${totalDraft}</div>
+      <div class="kpi-sub">need SME review</div>
+    </div>
+  `;
+
+  document.getElementById('dayGrid').innerHTML = days.map(d => {
+    const dayMods = modules.filter(m => m.d === d);
+    const sched = dayMods.reduce((s, m) => s + (m.m || 0), 0);
+    const draftCount = dayMods.filter(m => m.dr).length;
+    const status = dayStatus(sched, DAY_BUDGET);
+    const pct = Math.min(100, (sched / DAY_BUDGET) * 100);
+    return `
+      <div class="day-card" onclick="goToDay(${d})">
+        <div class="day-card-header">
+          <h3>Day ${d}</h3>
+          <span class="day-status ${status}">${status.toUpperCase()}</span>
+        </div>
+        <div class="day-card-bar">
+          <div class="day-card-bar-fill ${status === 'over' ? 'over' : ''}" style="width:${pct}%"></div>
+        </div>
+        <div class="day-card-meta">
+          <span><strong>${sched}</strong> / ${DAY_BUDGET} min</span>
+          <span>${dayMods.length} modules</span>
+        </div>
+        ${draftCount > 0 ? `<div class="draft-pill">${draftCount} draft</div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function renderWeek() {
+  const weeks = [
+    { label: 'Week 1', days: [3,4,5], desc: 'Days 3 – 5' },
+    { label: 'Week 2', days: [6,7,8,9,10], desc: 'Days 6 – 10' },
+  ];
+  document.getElementById('weekContent').innerHTML = weeks.map(w => {
+    const wkSched = w.days.reduce((s, d) =>
+      s + modules.filter(m => m.d === d).reduce((ss, m) => ss + (m.m || 0), 0), 0);
+    const wkBudget = w.days.length * DAY_BUDGET;
+    const wkPct = ((wkSched / wkBudget) * 100).toFixed(1);
+    const wkMods = w.days.reduce((s, d) => s + modules.filter(m => m.d === d).length, 0);
+    return `
+      <div class="week-card">
+        <h2>${w.label} <span class="week-sub">— ${w.desc}</span></h2>
+        <div class="kpi-row" style="margin-bottom:18px;">
+          <div class="kpi"><div class="kpi-label">Scheduled</div><div class="kpi-value">${wkSched} min</div></div>
+          <div class="kpi"><div class="kpi-label">Budget</div><div class="kpi-value">${wkBudget} min</div></div>
+          <div class="kpi ${wkPct >= 90 ? 'good' : 'warn'}"><div class="kpi-label">Fill</div><div class="kpi-value">${wkPct}%</div></div>
+          <div class="kpi"><div class="kpi-label">Modules</div><div class="kpi-value">${wkMods}</div></div>
+        </div>
+        <div class="week-days">
+          ${w.days.map(d => {
+            const dayMods = modules.filter(m => m.d === d);
+            const sched = dayMods.reduce((s, m) => s + (m.m || 0), 0);
+            const status = dayStatus(sched, DAY_BUDGET);
+            const pct = Math.min(100, (sched / DAY_BUDGET) * 100);
+            return `
+              <div class="day-card" onclick="goToDay(${d})">
+                <div class="day-card-header">
+                  <h3>Day ${d}</h3>
+                  <span class="day-status ${status}">${status.toUpperCase()}</span>
+                </div>
+                <div class="day-card-bar">
+                  <div class="day-card-bar-fill ${status === 'over' ? 'over' : ''}" style="width:${pct}%"></div>
+                </div>
+                <div class="day-card-meta">
+                  <span><strong>${sched}</strong> / ${DAY_BUDGET} min</span>
+                  <span>${dayMods.length} mods</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function goToDay(d) {
+  document.getElementById('daySelect').value = d;
+  showView('day');
+}
+
+function renderDay() {
+  const d = parseInt(document.getElementById('daySelect').value);
+  const dayMods = modules.filter(m => m.d === d);
+  const sched = dayMods.reduce((s, m) => s + (m.m || 0), 0);
+  const remaining = DAY_BUDGET - sched;
+  const pct = Math.min(100, (sched / DAY_BUDGET) * 100);
+  const status = dayStatus(sched, DAY_BUDGET);
+
+  const otjMods = dayMods.filter(m => (m.c || '').toLowerCase() === 'otj');
+  const otjMins = otjMods.reduce((s, m) => s + (m.m || 0), 0);
+
+  let html = `
+    <div class="day-budget-bar">
+      <div class="budget-stats">
+        <span><strong>${sched}</strong> min scheduled</span>
+        <span>Budget: <strong>${DAY_BUDGET}</strong> min</span>
+        <span>Remaining: <strong style="color:${remaining < 0 ? 'var(--warn-red-text)' : 'var(--navy)'}">${remaining}</strong> min</span>
+      </div>
+      <div class="budget-bar">
+        <div class="budget-bar-fill ${status === 'over' ? 'over' : ''}" style="width:${pct}%"></div>
+      </div>
+      ${otjMins > 0 ? `<div class="otj-note"><strong>OTJ time:</strong> ${otjMins} min — counts toward day total</div>` : ''}
+    </div>
+    <div class="module-list">
+  `;
+
+  dayMods.forEach((m, idx) => {
+    const globalIdx = modules.indexOf(m);
+    const key = moduleKey(m, globalIdx);
+    const noteVal = notes[key] || m.nt || '';
+    const ctClass = (m.c || '').toLowerCase().replace(/[^a-z]/g, '');
+    html += `
+      <div class="module-card ${m.dr ? 'draft' : ''}">
+        <div class="module-card-header">
+          <div class="module-title">${m.n}</div>
+          <div class="module-meta">
+            ${m.dr ? '<span class="draft-pill">⚠️ DRAFT</span>' : ''}
+            <span class="ct-pill">${m.c || '—'}</span>
+            <span class="mins-pill">${m.m} min</span>
+          </div>
+        </div>
+        <div class="module-body">
+          <div class="module-field">
+            <strong>Learner Outcome</strong>
+            <div class="field-content">${m.o || '—'}</div>
+          </div>
+          <div class="module-field">
+            <strong>Decisions Learner Must Make</strong>
+            <div class="field-content">${m.dec || '—'}</div>
+          </div>
+          <div class="module-field">
+            <strong>Systems / Tools</strong>
+            <div class="field-content">${m.sys || '—'}</div>
+          </div>
+          <div class="module-field">
+            <strong>Artifacts</strong>
+            <div class="field-content">${[m.a1, m.a2, m.a3].filter(Boolean).join(' · ') || '—'}</div>
+          </div>
+        </div>
+        <div class="module-notes">
+          <div class="notes-label">
+            <span>Notes</span>
+            <span class="notes-status" id="status-${idx}">Saved</span>
+          </div>
+          <textarea data-key="${key}" data-status-id="status-${idx}" onkeyup="handleNote(this)">${noteVal}</textarea>
+        </div>
+      </div>
+    `;
+  });
+
+  html += `</div>`;
+  document.getElementById('dayContent').innerHTML = html;
+}
+
+let noteTimer = null;
+function handleNote(el) {
+  clearTimeout(noteTimer);
+  const key = el.dataset.key;
+  const statusEl = document.getElementById(el.dataset.statusId);
+  notes[key] = el.value;
+  noteTimer = setTimeout(async () => {
+    await saveNotes();
+    if (statusEl) {
+      statusEl.classList.add('show');
+      setTimeout(() => statusEl.classList.remove('show'), 1500);
+    }
+  }, 500);
+}
+
+// ===== IMPORT XLSX =====
+function handleFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, { type: 'array' });
+      const sheet = wb.Sheets['Content Inventory'] || wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+      // Header row at index 0
+      const header = rows[0];
+      const colIdx = {
+        d: header.indexOf('Day'),
+        n: header.indexOf('Session or Module Name'),
+        m: header.indexOf('Estimated Minutes'),
+        c: header.indexOf('Content Type'),
+        a1: header.indexOf('Artifact Type 1'),
+        a2: header.indexOf('Artifact Type 2'),
+        a3: header.indexOf('Artifact Type 3'),
+        o: header.indexOf('Learner Outcome in Plain Language'),
+        dec: header.indexOf('Decisions the Learner Must Make'),
+        sys: header.indexOf('Systems or Tools Touched'),
+        nt: header.indexOf('Notes'),
+        st: header.indexOf('Status'),
+      };
+      const imported = [];
+      for (let i = 1; i < rows.length; i++) {
+        const r = rows[i];
+        if (!r || !r[colIdx.d] || !r[colIdx.n]) continue;
+        imported.push({
+          d: Number(r[colIdx.d]),
+          n: String(r[colIdx.n]),
+          m: Number(r[colIdx.m]) || 0,
+          c: String(r[colIdx.c] || ''),
+          a1: String(r[colIdx.a1] || ''),
+          a2: String(r[colIdx.a2] || ''),
+          a3: String(r[colIdx.a3] || ''),
+          o: String(r[colIdx.o] || ''),
+          dec: String(r[colIdx.dec] || ''),
+          sys: String(r[colIdx.sys] || ''),
+          nt: String(r[colIdx.nt] || ''),
+          dr: String(r[colIdx.st] || '').toLowerCase() === 'draft' ? 1 : 0,
+        });
+      }
+      modules = imported;
+      document.getElementById('dataSource').textContent = `${file.name} (${imported.length} modules)`;
+      renderOverview();
+      renderWeek();
+      renderDay();
+      alert(`Imported ${imported.length} modules from ${file.name}`);
+    } catch (err) {
+      alert('Import failed: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function resetToBuiltIn() {
+  modules = JSON.parse(JSON.stringify(SCAFFOLD));
+  document.getElementById('dataSource').textContent = `Built-in scaffold (${modules.length} modules)`;
+  renderOverview();
+  renderWeek();
+  renderDay();
+}
+
+// ===== STAKEHOLDER TOGGLE =====
+document.getElementById('stakeholderToggle').addEventListener('change', (e) => {
+  document.body.classList.toggle('stakeholder', e.target.checked);
+});
+
+// ===== INIT =====
+const REMOTE_XLSX = 'https://raw.githubusercontent.com/ariggott-lgtm/billing-program-dashboard/main/Program_Dashboard.xlsx';
+
+async function fetchRemoteXlsx() {
+  try {
+    const res = await fetch(REMOTE_XLSX + '?t=' + Date.now()); // cache-bust
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const buf = await res.arrayBuffer();
+    const wb = XLSX.read(new Uint8Array(buf), { type: 'array' });
+    const sheet = wb.Sheets['Content Inventory'] || wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    const header = rows[0];
+    const colIdx = {
+      d: header.indexOf('Day'),
+      n: header.indexOf('Session or Module Name'),
+      m: header.indexOf('Estimated Minutes'),
+      c: header.indexOf('Content Type'),
+      a1: header.indexOf('Artifact Type 1'),
+      a2: header.indexOf('Artifact Type 2'),
+      a3: header.indexOf('Artifact Type 3'),
+      o: header.indexOf('Learner Outcome in Plain Language'),
+      dec: header.indexOf('Decisions the Learner Must Make'),
+      sys: header.indexOf('Systems or Tools Touched'),
+      nt: header.indexOf('Notes'),
+      st: header.indexOf('Status'),
+    };
+    const imported = [];
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || !r[colIdx.d] || !r[colIdx.n]) continue;
+      imported.push({
+        d: Number(r[colIdx.d]),
+        n: String(r[colIdx.n]),
+        m: Number(r[colIdx.m]) || 0,
+        c: String(r[colIdx.c] || ''),
+        a1: String(r[colIdx.a1] || ''),
+        a2: String(r[colIdx.a2] || ''),
+        a3: String(r[colIdx.a3] || ''),
+        o: String(r[colIdx.o] || ''),
+        dec: String(r[colIdx.dec] || ''),
+        sys: String(r[colIdx.sys] || ''),
+        nt: String(r[colIdx.nt] || ''),
+        dr: String(r[colIdx.st] || '').toLowerCase() === 'draft' ? 1 : 0,
+      });
+    }
+    if (imported.length > 0) {
+      modules = imported;
+      const srcEl = document.getElementById('dataSource');
+      if (srcEl) srcEl.textContent = `Live from GitHub (${imported.length} modules · loaded ${new Date().toLocaleTimeString()})`;
+    }
+  } catch (err) {
+    console.warn('Remote xlsx fetch failed, using built-in scaffold:', err);
+    const srcEl = document.getElementById('dataSource');
+    if (srcEl) srcEl.textContent = `Built-in scaffold (${modules.length} modules) — remote fetch failed`;
+  }
+}
+
+(async function init() {
+  await loadNotes();
+  await fetchRemoteXlsx();
+  renderOverview();
+})();
+</script>
+</body>
+</html>
