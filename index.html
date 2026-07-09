@@ -1238,11 +1238,6 @@ body.stakeholder .compact-row .drag-handle { display: none; }
     <div class="subtitle">Days 3–10 · Conservice Billing Entry Level</div>
   </div>
   <div class="header-controls">
-    <label class="toggle">
-      <span>Stakeholder View</span>
-      <input type="checkbox" id="stakeholderToggle">
-      <span class="toggle-slider"></span>
-    </label>
     <button class="btn primary editor-only" onclick="openAddModal()">+ Add Content</button>
     <button class="btn ghost editor-only" onclick="exportJSON()">Export</button>
     <button class="btn ghost" onclick="window.print()">Print</button>
@@ -2146,11 +2141,6 @@ function handleJSONFile(event) {
   reader.readAsText(file);
   event.target.value = ''; // reset so the same file can be picked again later
 }
-
-// ===== STAKEHOLDER TOGGLE =====
-document.getElementById('stakeholderToggle').addEventListener('change', (e) => {
-  document.body.classList.toggle('stakeholder', e.target.checked);
-});
 
 // ===== INIT =====
 const REMOTE_JSON = 'https://raw.githubusercontent.com/ariggott-lgtm/billing-program-dashboard/main/dashboard-content.json';
