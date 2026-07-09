@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Billing EL Program Dashboard</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root {
   /* Brand */
@@ -663,6 +662,340 @@ body.stakeholder .day-card:hover { transform: none; box-shadow: var(--shadow-sm)
   padding: 60px 20px;
   color: var(--gray-body);
 }
+
+/* ===== ADD/EDIT MODAL ===== */
+.modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(26,39,68,0.55);
+  backdrop-filter: blur(3px);
+  z-index: 100;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px;
+  overflow-y: auto;
+}
+.modal-backdrop.show { display: flex; }
+.modal {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 28px 32px;
+  width: 100%;
+  max-width: 720px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-soft);
+}
+.modal h2 {
+  color: var(--navy);
+  font-size: 20px;
+  margin-bottom: 6px;
+  letter-spacing: -0.2px;
+}
+.modal-sub {
+  font-size: 12px;
+  color: var(--gray-body);
+  margin-bottom: 20px;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px 18px;
+}
+.form-field { display: flex; flex-direction: column; }
+.form-field.full { grid-column: 1 / -1; }
+.form-field label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--navy);
+  margin-bottom: 5px;
+}
+.form-field input,
+.form-field select,
+.form-field textarea {
+  padding: 9px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  background: var(--bg-card);
+  color: var(--gray-body);
+  transition: all 0.15s;
+}
+.form-field textarea { resize: vertical; min-height: 60px; }
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  outline: none;
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(38,55,70,0.08);
+}
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-soft);
+}
+.modal-actions-right { display: flex; gap: 10px; }
+.btn.danger {
+  background: var(--warn-bg);
+  color: var(--warn-text);
+}
+.btn.danger:hover { background: #F0BFBF; }
+.btn.solid {
+  background: var(--navy);
+  color: var(--white);
+}
+.btn.solid:hover { background: var(--navy-soft); color: var(--white); }
+
+/* ===== MODULE CARD CONTROLS ===== */
+.module-card { position: relative; }
+.module-controls {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.icon-btn {
+  background: transparent;
+  border: 1px solid var(--border-soft);
+  border-radius: 5px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--navy-soft);
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.icon-btn:hover {
+  background: var(--lavender-light);
+  color: var(--navy);
+  border-color: var(--lavender-deep);
+}
+.icon-btn.drive {
+  background: var(--good-bg);
+  color: var(--good-text);
+  border-color: #B8D49A;
+  text-decoration: none;
+  display: inline-block;
+}
+.icon-btn.drive:hover { background: #D0E0BB; color: var(--good-text); }
+.drag-handle {
+  cursor: grab;
+  color: var(--gray-light);
+  padding: 4px 6px;
+  font-size: 16px;
+  line-height: 1;
+  user-select: none;
+  transition: color 0.15s;
+}
+.drag-handle:hover { color: var(--navy); }
+.drag-handle:active { cursor: grabbing; }
+.module-card.dragging { opacity: 0.4; }
+.module-card.drag-over {
+  border-top: 3px solid var(--navy);
+}
+
+body.stakeholder .module-controls .icon-btn:not(.drive),
+body.stakeholder .drag-handle { display: none; }
+
+/* ===== COMMENTS ===== */
+.comments-section {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-soft);
+}
+.comments-header {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--navy);
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+}
+.comment-item {
+  background: var(--bg-card-soft);
+  border-left: 3px solid var(--lavender-deep);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12.5px;
+  color: var(--gray-body);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+.comment-text { flex: 1; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; }
+.comment-meta {
+  font-size: 10px;
+  color: var(--navy-soft);
+  white-space: nowrap;
+  padding-top: 2px;
+}
+.comment-delete {
+  background: transparent;
+  border: none;
+  color: var(--navy-soft);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0 4px;
+  opacity: 0.4;
+  transition: opacity 0.15s;
+}
+.comment-delete:hover { opacity: 1; color: var(--warn-text); }
+.comment-input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 12.5px;
+  background: var(--bg-card);
+  color: var(--gray-body);
+  transition: all 0.15s;
+}
+.comment-input:focus {
+  outline: none;
+  border-color: var(--navy);
+  background: var(--bg-card);
+  box-shadow: 0 0 0 3px rgba(38,55,70,0.08);
+}
+.comment-input-hint {
+  font-size: 10px;
+  color: var(--navy-soft);
+  margin-top: 4px;
+  opacity: 0.7;
+}
+body.stakeholder .comment-input,
+body.stakeholder .comment-input-hint,
+body.stakeholder .comment-delete { display: none !important; }
+body.stakeholder .comments-section { display: block; }
+
+/* ===== ALL CONTENT TABLE ===== */
+.all-content-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.filter-input {
+  padding: 9px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  background: var(--bg-card);
+  color: var(--navy);
+  min-width: 240px;
+  flex: 1;
+}
+.filter-input:focus { outline: none; border-color: var(--navy); }
+.all-content-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.compact-row {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-left: 4px solid var(--gray-light);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: grid;
+  grid-template-columns: auto 60px 1fr auto auto auto auto auto;
+  gap: 12px;
+  align-items: center;
+  font-size: 12.5px;
+  transition: all 0.15s;
+}
+.compact-row:hover { box-shadow: var(--shadow-sm); border-color: var(--lavender-deep); }
+.compact-row.draft { border-left-color: var(--draft-border); }
+.compact-row.dragging { opacity: 0.4; }
+.compact-row.drag-over { border-top: 3px solid var(--navy); }
+.cr-day {
+  font-weight: 700;
+  color: var(--navy);
+  font-size: 12px;
+  letter-spacing: 0.3px;
+}
+.cr-title {
+  color: var(--navy);
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cr-mins {
+  font-size: 11px;
+  color: var(--navy);
+  background: var(--lavender-light);
+  padding: 3px 9px;
+  border-radius: 10px;
+  font-weight: 700;
+  border: 1px solid var(--lavender-deep);
+}
+.cr-ct {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 10px;
+  background: var(--lavender);
+  color: var(--navy);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.cr-comments-count {
+  font-size: 11px;
+  color: var(--navy-soft);
+  min-width: 22px;
+  text-align: center;
+}
+.compact-row .drag-handle { padding: 2px 4px; font-size: 14px; }
+body.stakeholder .compact-row .icon-btn:not(.drive) { display: none; }
+body.stakeholder .compact-row .drag-handle { display: none; }
+
+@media (max-width: 900px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .compact-row { grid-template-columns: auto 1fr auto; }
+  .compact-row .cr-day, .compact-row .cr-mins, .compact-row .cr-ct, .compact-row .cr-comments-count { display: none; }
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--navy);
+  color: var(--white);
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  z-index: 200;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.25s ease;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
 </style>
 </head>
 <body>
@@ -678,27 +1011,20 @@ body.stakeholder .day-card:hover { transform: none; box-shadow: var(--shadow-sm)
       <input type="checkbox" id="stakeholderToggle">
       <span class="toggle-slider"></span>
     </label>
-    <button class="btn ghost editor-only" onclick="document.getElementById('fileInput').click()">Import xlsx</button>
+    <button class="btn primary editor-only" onclick="openAddModal()">+ Add Content</button>
+    <button class="btn ghost editor-only" onclick="exportJSON()">Export</button>
     <button class="btn ghost" onclick="window.print()">Print</button>
   </div>
-  <input type="file" id="fileInput" accept=".xlsx" onchange="handleFile(event)">
 </header>
 
 <nav class="tabs">
   <button class="tab active" data-view="overview" onclick="showView('overview')">Overview</button>
   <button class="tab" data-view="week" onclick="showView('week')">By Week</button>
   <button class="tab" data-view="day" onclick="showView('day')">By Day</button>
+  <button class="tab" data-view="all" onclick="showView('all')">All Content</button>
 </nav>
 
 <main>
-  <div class="import-banner editor-only" id="importBanner">
-    <span><strong>Data source:</strong> <span id="dataSource">Built-in scaffold (88 modules)</span></span>
-    <div class="import-controls">
-      <button class="btn primary" onclick="document.getElementById('fileInput').click()">Import Program_Dashboard.xlsx</button>
-      <button class="btn" onclick="resetToBuiltIn()">Reset to scaffold</button>
-    </div>
-  </div>
-
   <!-- OVERVIEW -->
   <div id="view-overview" class="view active">
     <div class="kpi-row" id="kpiRow"></div>
@@ -727,7 +1053,124 @@ body.stakeholder .day-card:hover { transform: none; box-shadow: var(--shadow-sm)
     </div>
     <div id="dayContent"></div>
   </div>
+
+  <!-- ALL CONTENT -->
+  <div id="view-all" class="view">
+    <div class="section-eyebrow">Master List</div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;margin-bottom:24px;">
+      <div class="section-title" style="margin-bottom:0;">All Content <span style="font-weight:400;color:var(--gray-body);font-size:14px;" id="allCountLabel"></span></div>
+      <button class="btn solid editor-only" onclick="openAddModal()">+ Add Content</button>
+    </div>
+    <div class="all-content-controls">
+      <input type="text" id="filterInput" class="filter-input" placeholder="Filter by title, day, content type, or system..." oninput="renderAll()">
+      <select id="filterDay" class="day-select" onchange="renderAll()">
+        <option value="">All Days</option>
+        <option value="3">Day 3</option>
+        <option value="4">Day 4</option>
+        <option value="5">Day 5</option>
+        <option value="6">Day 6</option>
+        <option value="7">Day 7</option>
+        <option value="8">Day 8</option>
+        <option value="9">Day 9</option>
+        <option value="10">Day 10</option>
+      </select>
+    </div>
+    <div id="allContent" class="all-content-list"></div>
+  </div>
 </main>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <h2 id="modalTitle">Add Content</h2>
+    <div class="modal-sub" id="modalSub">Add a new module to the program.</div>
+    <div class="form-grid">
+      <div class="form-field full">
+        <label>Module / Session Name *</label>
+        <input type="text" id="f-name" placeholder="e.g. Bill Dates — The Expert Check">
+      </div>
+      <div class="form-field">
+        <label>Day *</label>
+        <select id="f-day">
+          <option value="3">Day 3</option>
+          <option value="4">Day 4</option>
+          <option value="5">Day 5</option>
+          <option value="6">Day 6</option>
+          <option value="7">Day 7</option>
+          <option value="8">Day 8</option>
+          <option value="9">Day 9</option>
+          <option value="10">Day 10</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Estimated Minutes</label>
+        <input type="number" id="f-mins" min="0" step="5" value="30">
+      </div>
+      <div class="form-field">
+        <label>Content Type</label>
+        <select id="f-ct">
+          <option value="ILT">ILT</option>
+          <option value="Blended">Blended</option>
+          <option value="eLearning">eLearning</option>
+          <option value="Simulation">Simulation</option>
+          <option value="Activity">Activity</option>
+          <option value="OTJ">OTJ</option>
+          <option value="Assessment">Assessment</option>
+          <option value="Video">Video</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Status</label>
+        <select id="f-draft">
+          <option value="0">Ready</option>
+          <option value="1">Draft</option>
+        </select>
+      </div>
+      <div class="form-field full">
+        <label>Google Drive Link (optional)</label>
+        <input type="url" id="f-link" placeholder="https://drive.google.com/...">
+      </div>
+      <div class="form-field full">
+        <label>Learner Outcome</label>
+        <textarea id="f-outcome" placeholder="What the learner will be able to do..."></textarea>
+      </div>
+      <div class="form-field full">
+        <label>Decisions the Learner Must Make</label>
+        <textarea id="f-decisions"></textarea>
+      </div>
+      <div class="form-field">
+        <label>Systems / Tools</label>
+        <input type="text" id="f-systems" placeholder="e.g. YODA, Skywalker">
+      </div>
+      <div class="form-field">
+        <label>Artifact 1</label>
+        <input type="text" id="f-a1" placeholder="e.g. Facilitator Guide">
+      </div>
+      <div class="form-field">
+        <label>Artifact 2</label>
+        <input type="text" id="f-a2">
+      </div>
+      <div class="form-field">
+        <label>Artifact 3</label>
+        <input type="text" id="f-a3">
+      </div>
+      <div class="form-field full">
+        <label>Notes (static reference)</label>
+        <textarea id="f-notes"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn danger" id="modalDeleteBtn" onclick="deleteModule()" style="display:none;">Delete</button>
+      <div style="flex:1;"></div>
+      <div class="modal-actions-right">
+        <button class="btn" onclick="closeModal()">Cancel</button>
+        <button class="btn solid" onclick="saveModule()" id="modalSaveBtn">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script>
 // ===== BUILT-IN SCAFFOLD DATA (88 modules) =====
@@ -830,29 +1273,95 @@ const SCAFFOLD = [
 ];
 
 const DAY_BUDGET = 540;
-let modules = JSON.parse(JSON.stringify(SCAFFOLD));
-let notes = {};
 
-// ===== STORAGE =====
-async function loadNotes() {
+// ===== STATE =====
+// modules = current in-memory list (base scaffold or xlsx-imported, plus user additions)
+// baseModules = the last-loaded base (scaffold OR xlsx), untouched by user edits
+// overlays = user-added/edited/deleted modules, custom order, and comments (persisted in localStorage)
+let modules = [];
+let baseModules = [];
+let overlays = {
+  added: [],           // new modules created via + Add Content
+  edits: {},           // { id: {partial fields to override} }
+  deleted: [],         // [id, id, ...] for scaffold/xlsx modules removed
+  order: {},           // { "day-3": [id, id, ...], "all": [id, ...] }
+  comments: {},        // { id: [ {text, ts}, ... ] }
+};
+
+const STORAGE_KEY = 'billing-el-overlays-v1';
+let editingId = null; // when set, modal is in edit mode
+
+// ===== ID GENERATION =====
+// Existing scaffold modules don't have IDs. We generate stable ones from day + name hash.
+function stableId(mod) {
+  const s = `d${mod.d}::${mod.n}`;
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  return 'x' + Math.abs(h).toString(36);
+}
+function newId() {
+  return 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+// ===== STORAGE (localStorage, works on GitHub Pages) =====
+function loadOverlays() {
   try {
-    const result = await window.storage.get('billing-el-notes');
-    if (result && result.value) notes = JSON.parse(result.value);
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      overlays = Object.assign(overlays, parsed);
+      // ensure all keys exist
+      overlays.added = overlays.added || [];
+      overlays.edits = overlays.edits || {};
+      overlays.deleted = overlays.deleted || [];
+      overlays.order = overlays.order || {};
+      overlays.comments = overlays.comments || {};
+    }
   } catch (e) {
-    // first load, no notes yet
-    notes = {};
+    console.warn('Could not load overlays:', e);
   }
 }
-async function saveNotes() {
+function saveOverlays() {
   try {
-    await window.storage.set('billing-el-notes', JSON.stringify(notes));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(overlays));
   } catch (e) {
-    console.error('Could not save notes:', e);
+    console.error('Could not save overlays:', e);
+    showToast('Save failed — storage may be full');
   }
 }
 
-function moduleKey(mod, idx) {
-  return `d${mod.d}-${idx}-${mod.n.substring(0, 30)}`;
+// ===== MERGE BASE + OVERLAYS INTO WORKING MODULES =====
+function rebuildModules() {
+  const withIds = baseModules.map(m => ({ ...m, id: m.id || stableId(m) }));
+  const filtered = withIds.filter(m => !overlays.deleted.includes(m.id));
+  const edited = filtered.map(m => overlays.edits[m.id] ? { ...m, ...overlays.edits[m.id] } : m);
+  const combined = edited.concat(overlays.added);
+  // apply custom day order where present
+  modules = combined;
+}
+
+function orderedForDay(d) {
+  const dayMods = modules.filter(m => m.d === d);
+  const orderKey = `day-${d}`;
+  const ord = overlays.order[orderKey];
+  if (!ord) return dayMods;
+  const byId = Object.fromEntries(dayMods.map(m => [m.id, m]));
+  const ordered = [];
+  ord.forEach(id => { if (byId[id]) { ordered.push(byId[id]); delete byId[id]; } });
+  Object.values(byId).forEach(m => ordered.push(m)); // append anything not in the order list
+  return ordered;
+}
+
+function orderedAll(filterFn) {
+  let list = modules.slice();
+  if (filterFn) list = list.filter(filterFn);
+  const ord = overlays.order['all'];
+  if (!ord) return list.sort((a, b) => a.d - b.d);
+  const byId = Object.fromEntries(list.map(m => [m.id, m]));
+  const ordered = [];
+  ord.forEach(id => { if (byId[id]) { ordered.push(byId[id]); delete byId[id]; } });
+  Object.values(byId).sort((a, b) => a.d - b.d).forEach(m => ordered.push(m));
+  return ordered;
 }
 
 // ===== VIEWS =====
@@ -864,12 +1373,17 @@ function showView(name) {
   if (name === 'overview') renderOverview();
   if (name === 'week') renderWeek();
   if (name === 'day') renderDay();
+  if (name === 'all') renderAll();
 }
 
 function dayStatus(scheduled, budget) {
   if (scheduled > budget) return 'over';
   if (scheduled >= budget * 0.9) return 'full';
   return 'under';
+}
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 function renderOverview() {
@@ -988,7 +1502,7 @@ function goToDay(d) {
 
 function renderDay() {
   const d = parseInt(document.getElementById('daySelect').value);
-  const dayMods = modules.filter(m => m.d === d);
+  const dayMods = orderedForDay(d);
   const sched = dayMods.reduce((s, m) => s + (m.m || 0), 0);
   const remaining = DAY_BUDGET - sched;
   const pct = Math.min(100, (sched / DAY_BUDGET) * 100);
@@ -1002,55 +1516,63 @@ function renderDay() {
       <div class="budget-stats">
         <span><strong>${sched}</strong> min scheduled</span>
         <span>Budget: <strong>${DAY_BUDGET}</strong> min</span>
-        <span>Remaining: <strong style="color:${remaining < 0 ? 'var(--warn-red-text)' : 'var(--navy)'}">${remaining}</strong> min</span>
+        <span>Remaining: <strong style="color:${remaining < 0 ? 'var(--warn-text)' : 'var(--navy)'}">${remaining}</strong> min</span>
       </div>
       <div class="budget-bar">
         <div class="budget-bar-fill ${status === 'over' ? 'over' : ''}" style="width:${pct}%"></div>
       </div>
       ${otjMins > 0 ? `<div class="otj-note"><strong>OTJ time:</strong> ${otjMins} min — counts toward day total</div>` : ''}
     </div>
-    <div class="module-list">
+    <div class="module-list" id="dayModuleList" data-day="${d}">
   `;
 
-  dayMods.forEach((m, idx) => {
-    const globalIdx = modules.indexOf(m);
-    const key = moduleKey(m, globalIdx);
-    const noteVal = notes[key] || m.nt || '';
-    const ctClass = (m.c || '').toLowerCase().replace(/[^a-z]/g, '');
+  dayMods.forEach(m => {
+    const comments = overlays.comments[m.id] || [];
     html += `
-      <div class="module-card ${m.dr ? 'draft' : ''}">
+      <div class="module-card ${m.dr ? 'draft' : ''}" data-id="${esc(m.id)}" draggable="true">
         <div class="module-card-header">
-          <div class="module-title">${m.n}</div>
+          <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:240px;">
+            <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
+            <div class="module-title">${esc(m.n)}</div>
+          </div>
           <div class="module-meta">
             ${m.dr ? '<span class="draft-pill">⚠️ DRAFT</span>' : ''}
-            <span class="ct-pill">${m.c || '—'}</span>
+            <span class="ct-pill">${esc(m.c) || '—'}</span>
             <span class="mins-pill">${m.m} min</span>
+            <div class="module-controls">
+              ${m.link ? `<a class="icon-btn drive" href="${esc(m.link)}" target="_blank" rel="noopener" title="Open in Drive">Drive ↗</a>` : ''}
+              <button class="icon-btn editor-only" onclick="openEditModal('${esc(m.id)}')" title="Edit">✎ Edit</button>
+            </div>
           </div>
         </div>
         <div class="module-body">
           <div class="module-field">
             <strong>Learner Outcome</strong>
-            <div class="field-content">${m.o || '—'}</div>
+            <div class="field-content">${esc(m.o) || '—'}</div>
           </div>
           <div class="module-field">
             <strong>Decisions Learner Must Make</strong>
-            <div class="field-content">${m.dec || '—'}</div>
+            <div class="field-content">${esc(m.dec) || '—'}</div>
           </div>
           <div class="module-field">
             <strong>Systems / Tools</strong>
-            <div class="field-content">${m.sys || '—'}</div>
+            <div class="field-content">${esc(m.sys) || '—'}</div>
           </div>
           <div class="module-field">
             <strong>Artifacts</strong>
-            <div class="field-content">${[m.a1, m.a2, m.a3].filter(Boolean).join(' · ') || '—'}</div>
+            <div class="field-content">${[m.a1, m.a2, m.a3].filter(Boolean).map(esc).join(' · ') || '—'}</div>
           </div>
+          ${m.nt ? `<div class="module-field"><strong>Notes (reference)</strong><div class="field-content">${esc(m.nt)}</div></div>` : ''}
         </div>
-        <div class="module-notes">
-          <div class="notes-label">
-            <span>Notes</span>
-            <span class="notes-status" id="status-${idx}">Saved</span>
+        <div class="comments-section">
+          <div class="comments-header">
+            <span>Comments (${comments.length})</span>
           </div>
-          <textarea data-key="${key}" data-status-id="status-${idx}" onkeyup="handleNote(this)">${noteVal}</textarea>
+          <div class="comment-list" id="comments-${esc(m.id)}">
+            ${comments.map((c, i) => renderComment(m.id, c, i)).join('')}
+          </div>
+          <input type="text" class="comment-input" placeholder="Add a comment — press Enter to save" data-id="${esc(m.id)}" onkeydown="handleCommentKey(event, this)">
+          <div class="comment-input-hint">Press Enter to submit · Shift+Enter for new line</div>
         </div>
       </div>
     `;
@@ -1058,88 +1580,312 @@ function renderDay() {
 
   html += `</div>`;
   document.getElementById('dayContent').innerHTML = html;
+  wireDragAndDrop(document.getElementById('dayModuleList'), 'day-' + d);
 }
 
-let noteTimer = null;
-function handleNote(el) {
-  clearTimeout(noteTimer);
-  const key = el.dataset.key;
-  const statusEl = document.getElementById(el.dataset.statusId);
-  notes[key] = el.value;
-  noteTimer = setTimeout(async () => {
-    await saveNotes();
-    if (statusEl) {
-      statusEl.classList.add('show');
-      setTimeout(() => statusEl.classList.remove('show'), 1500);
+function renderComment(moduleId, c, idx) {
+  const dt = new Date(c.ts);
+  const timeStr = dt.toLocaleDateString(undefined, {month:'short', day:'numeric'}) + ' · ' + dt.toLocaleTimeString(undefined, {hour:'numeric', minute:'2-digit'});
+  return `
+    <div class="comment-item">
+      <div class="comment-text">${esc(c.text)}</div>
+      <div style="display:flex;gap:6px;align-items:flex-start;">
+        <span class="comment-meta">${timeStr}</span>
+        <button class="comment-delete editor-only" onclick="deleteComment('${esc(moduleId)}', ${idx})" title="Delete comment">✕</button>
+      </div>
+    </div>
+  `;
+}
+
+function handleCommentKey(event, inputEl) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    const text = inputEl.value.trim();
+    if (!text) return;
+    const id = inputEl.dataset.id;
+    if (!overlays.comments[id]) overlays.comments[id] = [];
+    overlays.comments[id].push({ text, ts: Date.now() });
+    saveOverlays();
+    inputEl.value = '';
+    // re-render just this comment list for smoothness
+    const listEl = document.getElementById(`comments-${id}`);
+    const countEl = inputEl.closest('.comments-section').querySelector('.comments-header span');
+    if (listEl) {
+      listEl.innerHTML = overlays.comments[id].map((c, i) => renderComment(id, c, i)).join('');
+      listEl.scrollTop = listEl.scrollHeight;
     }
-  }, 500);
+    if (countEl) countEl.textContent = `Comments (${overlays.comments[id].length})`;
+  }
 }
 
-// ===== IMPORT XLSX =====
-function handleFile(event) {
+function deleteComment(moduleId, idx) {
+  if (!overlays.comments[moduleId]) return;
+  overlays.comments[moduleId].splice(idx, 1);
+  if (overlays.comments[moduleId].length === 0) delete overlays.comments[moduleId];
+  saveOverlays();
+  // re-render active view
+  const currentView = document.querySelector('.view.active').id.replace('view-', '');
+  showView(currentView);
+}
+
+// ===== ALL CONTENT VIEW =====
+function renderAll() {
+  const filterText = (document.getElementById('filterInput')?.value || '').toLowerCase().trim();
+  const filterDay = document.getElementById('filterDay')?.value || '';
+  const filterFn = m => {
+    if (filterDay && String(m.d) !== filterDay) return false;
+    if (!filterText) return true;
+    const hay = [m.n, m.c, m.sys, m.o, m.a1, m.a2, m.a3, 'day ' + m.d].join(' ').toLowerCase();
+    return hay.includes(filterText);
+  };
+  const list = orderedAll(filterFn);
+
+  document.getElementById('allCountLabel').textContent = `— ${list.length} of ${modules.length} modules`;
+
+  const html = list.map(m => {
+    const comments = overlays.comments[m.id] || [];
+    return `
+      <div class="compact-row ${m.dr ? 'draft' : ''}" data-id="${esc(m.id)}" draggable="true">
+        <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
+        <span class="cr-day">Day ${m.d}</span>
+        <span class="cr-title" title="${esc(m.n)}">${esc(m.n)}${m.dr ? ' <span style="color:var(--draft-text);font-weight:700;">·DRAFT</span>' : ''}</span>
+        <span class="cr-ct">${esc(m.c) || '—'}</span>
+        <span class="cr-mins">${m.m || 0}m</span>
+        <span class="cr-comments-count" title="${comments.length} comment${comments.length===1?'':'s'}">${comments.length ? '💬' + comments.length : ''}</span>
+        ${m.link ? `<a class="icon-btn drive" href="${esc(m.link)}" target="_blank" rel="noopener">Drive ↗</a>` : '<span></span>'}
+        <button class="icon-btn editor-only" onclick="openEditModal('${esc(m.id)}')">✎</button>
+      </div>
+    `;
+  }).join('');
+  const container = document.getElementById('allContent');
+  container.innerHTML = html || '<div class="empty">No modules match those filters.</div>';
+  wireDragAndDrop(container, 'all');
+}
+
+// ===== DRAG AND DROP =====
+let dragSrcId = null;
+function wireDragAndDrop(container, orderKey) {
+  if (!container) return;
+  const rows = container.querySelectorAll('[draggable="true"]');
+  rows.forEach(row => {
+    row.addEventListener('dragstart', (e) => {
+      dragSrcId = row.dataset.id;
+      row.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      try { e.dataTransfer.setData('text/plain', dragSrcId); } catch (_) {}
+    });
+    row.addEventListener('dragend', () => {
+      row.classList.remove('dragging');
+      container.querySelectorAll('.drag-over').forEach(r => r.classList.remove('drag-over'));
+    });
+    row.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      row.classList.add('drag-over');
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
+    row.addEventListener('drop', (e) => {
+      e.preventDefault();
+      row.classList.remove('drag-over');
+      const targetId = row.dataset.id;
+      if (!dragSrcId || dragSrcId === targetId) return;
+      commitReorder(container, orderKey, dragSrcId, targetId);
+      dragSrcId = null;
+    });
+  });
+}
+
+function commitReorder(container, orderKey, srcId, targetId) {
+  const currentIds = Array.from(container.querySelectorAll('[draggable="true"]')).map(el => el.dataset.id);
+  const srcIdx = currentIds.indexOf(srcId);
+  const tgtIdx = currentIds.indexOf(targetId);
+  if (srcIdx < 0 || tgtIdx < 0) return;
+  currentIds.splice(srcIdx, 1);
+  currentIds.splice(tgtIdx, 0, srcId);
+  overlays.order[orderKey] = currentIds;
+  saveOverlays();
+  // re-render active view
+  const currentView = document.querySelector('.view.active').id.replace('view-', '');
+  showView(currentView);
+}
+
+// ===== MODAL =====
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'Add Content';
+  document.getElementById('modalSub').textContent = 'Add a new module to the program.';
+  document.getElementById('modalDeleteBtn').style.display = 'none';
+  document.getElementById('modalSaveBtn').textContent = 'Add Module';
+  // clear fields
+  ['f-name','f-link','f-outcome','f-decisions','f-systems','f-a1','f-a2','f-a3','f-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-mins').value = 30;
+  document.getElementById('f-day').value = '3';
+  document.getElementById('f-ct').value = 'ILT';
+  document.getElementById('f-draft').value = '0';
+  document.getElementById('modalBackdrop').classList.add('show');
+  setTimeout(() => document.getElementById('f-name').focus(), 50);
+}
+
+function openEditModal(id) {
+  const mod = modules.find(m => m.id === id);
+  if (!mod) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent = 'Edit Content';
+  document.getElementById('modalSub').textContent = mod.n;
+  document.getElementById('modalDeleteBtn').style.display = 'inline-block';
+  document.getElementById('modalSaveBtn').textContent = 'Save Changes';
+  document.getElementById('f-name').value = mod.n || '';
+  document.getElementById('f-day').value = mod.d || 3;
+  document.getElementById('f-mins').value = mod.m || 0;
+  document.getElementById('f-ct').value = mod.c || 'ILT';
+  document.getElementById('f-draft').value = mod.dr ? '1' : '0';
+  document.getElementById('f-link').value = mod.link || '';
+  document.getElementById('f-outcome').value = mod.o || '';
+  document.getElementById('f-decisions').value = mod.dec || '';
+  document.getElementById('f-systems').value = mod.sys || '';
+  document.getElementById('f-a1').value = mod.a1 || '';
+  document.getElementById('f-a2').value = mod.a2 || '';
+  document.getElementById('f-a3').value = mod.a3 || '';
+  document.getElementById('f-notes').value = mod.nt || '';
+  document.getElementById('modalBackdrop').classList.add('show');
+  setTimeout(() => document.getElementById('f-name').focus(), 50);
+}
+
+function closeModal() {
+  document.getElementById('modalBackdrop').classList.remove('show');
+  editingId = null;
+}
+
+function collectForm() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { showToast('Name is required'); document.getElementById('f-name').focus(); return null; }
+  return {
+    n: name,
+    d: parseInt(document.getElementById('f-day').value),
+    m: parseInt(document.getElementById('f-mins').value) || 0,
+    c: document.getElementById('f-ct').value,
+    dr: document.getElementById('f-draft').value === '1' ? 1 : 0,
+    link: document.getElementById('f-link').value.trim(),
+    o: document.getElementById('f-outcome').value.trim(),
+    dec: document.getElementById('f-decisions').value.trim(),
+    sys: document.getElementById('f-systems').value.trim(),
+    a1: document.getElementById('f-a1').value.trim(),
+    a2: document.getElementById('f-a2').value.trim(),
+    a3: document.getElementById('f-a3').value.trim(),
+    nt: document.getElementById('f-notes').value.trim(),
+  };
+}
+
+function saveModule() {
+  const data = collectForm();
+  if (!data) return;
+  if (editingId) {
+    // is it a scaffold module or a user-added one?
+    const isUserAdded = overlays.added.some(m => m.id === editingId);
+    if (isUserAdded) {
+      const idx = overlays.added.findIndex(m => m.id === editingId);
+      overlays.added[idx] = { ...overlays.added[idx], ...data };
+    } else {
+      overlays.edits[editingId] = { ...(overlays.edits[editingId] || {}), ...data };
+    }
+    showToast('Module updated');
+  } else {
+    const id = newId();
+    overlays.added.push({ id, ...data });
+    showToast('Module added');
+  }
+  saveOverlays();
+  rebuildModules();
+  closeModal();
+  const currentView = document.querySelector('.view.active').id.replace('view-', '');
+  showView(currentView);
+}
+
+function deleteModule() {
+  if (!editingId) return;
+  const mod = modules.find(m => m.id === editingId);
+  if (!mod) return;
+  if (!confirm(`Delete "${mod.n}"? This cannot be undone (but you can re-add it manually).`)) return;
+  const isUserAdded = overlays.added.some(m => m.id === editingId);
+  if (isUserAdded) {
+    overlays.added = overlays.added.filter(m => m.id !== editingId);
+  } else {
+    if (!overlays.deleted.includes(editingId)) overlays.deleted.push(editingId);
+    delete overlays.edits[editingId];
+  }
+  // clean order lists and comments
+  Object.keys(overlays.order).forEach(k => {
+    overlays.order[k] = overlays.order[k].filter(id => id !== editingId);
+  });
+  delete overlays.comments[editingId];
+  saveOverlays();
+  rebuildModules();
+  closeModal();
+  showToast('Module deleted');
+  const currentView = document.querySelector('.view.active').id.replace('view-', '');
+  showView(currentView);
+}
+
+// close modal on backdrop click or Esc
+document.getElementById('modalBackdrop').addEventListener('click', (e) => {
+  if (e.target.id === 'modalBackdrop') closeModal();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && document.getElementById('modalBackdrop').classList.contains('show')) closeModal();
+});
+
+// ===== TOAST =====
+let toastTimer = null;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ===== EXPORT / IMPORT JSON =====
+function exportJSON() {
+  const payload = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    overlays: overlays,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const stamp = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `dashboard-content-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Exported. Commit this file to your repo to make changes permanent.');
+}
+
+function handleJSONFile(event) {
   const file = event.target.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = (e) => {
     try {
-      const data = new Uint8Array(e.target.result);
-      const wb = XLSX.read(data, { type: 'array' });
-      const sheet = wb.Sheets['Content Inventory'] || wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-      // Header row at index 0
-      const header = rows[0];
-      const colIdx = {
-        d: header.indexOf('Day'),
-        n: header.indexOf('Session or Module Name'),
-        m: header.indexOf('Estimated Minutes'),
-        c: header.indexOf('Content Type'),
-        a1: header.indexOf('Artifact Type 1'),
-        a2: header.indexOf('Artifact Type 2'),
-        a3: header.indexOf('Artifact Type 3'),
-        o: header.indexOf('Learner Outcome in Plain Language'),
-        dec: header.indexOf('Decisions the Learner Must Make'),
-        sys: header.indexOf('Systems or Tools Touched'),
-        nt: header.indexOf('Notes'),
-        st: header.indexOf('Status'),
-      };
-      const imported = [];
-      for (let i = 1; i < rows.length; i++) {
-        const r = rows[i];
-        if (!r || !r[colIdx.d] || !r[colIdx.n]) continue;
-        imported.push({
-          d: Number(r[colIdx.d]),
-          n: String(r[colIdx.n]),
-          m: Number(r[colIdx.m]) || 0,
-          c: String(r[colIdx.c] || ''),
-          a1: String(r[colIdx.a1] || ''),
-          a2: String(r[colIdx.a2] || ''),
-          a3: String(r[colIdx.a3] || ''),
-          o: String(r[colIdx.o] || ''),
-          dec: String(r[colIdx.dec] || ''),
-          sys: String(r[colIdx.sys] || ''),
-          nt: String(r[colIdx.nt] || ''),
-          dr: String(r[colIdx.st] || '').toLowerCase() === 'draft' ? 1 : 0,
-        });
-      }
-      modules = imported;
-      document.getElementById('dataSource').textContent = `${file.name} (${imported.length} modules)`;
-      renderOverview();
-      renderWeek();
-      renderDay();
-      alert(`Imported ${imported.length} modules from ${file.name}`);
+      const parsed = JSON.parse(e.target.result);
+      if (!parsed.overlays) throw new Error('Invalid file — missing overlays');
+      if (!confirm('Import this JSON? Your current in-browser edits, comments, and ordering will be replaced.')) return;
+      overlays = Object.assign({
+        added: [], edits: {}, deleted: [], order: {}, comments: {},
+      }, parsed.overlays);
+      saveOverlays();
+      rebuildModules();
+      showView('overview');
+      showToast(`Imported ${overlays.added.length} added modules and ${Object.keys(overlays.comments).length} comment threads`);
     } catch (err) {
-      alert('Import failed: ' + err.message);
+      showToast('JSON import failed: ' + err.message);
     }
   };
-  reader.readAsArrayBuffer(file);
-}
-
-function resetToBuiltIn() {
-  modules = JSON.parse(JSON.stringify(SCAFFOLD));
-  document.getElementById('dataSource').textContent = `Built-in scaffold (${modules.length} modules)`;
-  renderOverview();
-  renderWeek();
-  renderDay();
+  reader.readAsText(file);
+  event.target.value = ''; // reset so the same file can be picked again later
 }
 
 // ===== STAKEHOLDER TOGGLE =====
@@ -1148,65 +1894,35 @@ document.getElementById('stakeholderToggle').addEventListener('change', (e) => {
 });
 
 // ===== INIT =====
-const REMOTE_XLSX = 'https://raw.githubusercontent.com/ariggott-lgtm/billing-program-dashboard/main/Program_Dashboard.xlsx';
+const REMOTE_JSON = 'https://raw.githubusercontent.com/ariggott-lgtm/billing-program-dashboard/main/dashboard-content.json';
 
-async function fetchRemoteXlsx() {
+async function fetchRemoteJSON() {
+  // If a dashboard-content.json exists in the repo, load it as the shared baseline overlay
+  // for anyone visiting the URL. Local storage overlays layer on top and win on conflict.
   try {
-    const res = await fetch(REMOTE_XLSX + '?t=' + Date.now()); // cache-bust
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const buf = await res.arrayBuffer();
-    const wb = XLSX.read(new Uint8Array(buf), { type: 'array' });
-    const sheet = wb.Sheets['Content Inventory'] || wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-    const header = rows[0];
-    const colIdx = {
-      d: header.indexOf('Day'),
-      n: header.indexOf('Session or Module Name'),
-      m: header.indexOf('Estimated Minutes'),
-      c: header.indexOf('Content Type'),
-      a1: header.indexOf('Artifact Type 1'),
-      a2: header.indexOf('Artifact Type 2'),
-      a3: header.indexOf('Artifact Type 3'),
-      o: header.indexOf('Learner Outcome in Plain Language'),
-      dec: header.indexOf('Decisions the Learner Must Make'),
-      sys: header.indexOf('Systems or Tools Touched'),
-      nt: header.indexOf('Notes'),
-      st: header.indexOf('Status'),
-    };
-    const imported = [];
-    for (let i = 1; i < rows.length; i++) {
-      const r = rows[i];
-      if (!r || !r[colIdx.d] || !r[colIdx.n]) continue;
-      imported.push({
-        d: Number(r[colIdx.d]),
-        n: String(r[colIdx.n]),
-        m: Number(r[colIdx.m]) || 0,
-        c: String(r[colIdx.c] || ''),
-        a1: String(r[colIdx.a1] || ''),
-        a2: String(r[colIdx.a2] || ''),
-        a3: String(r[colIdx.a3] || ''),
-        o: String(r[colIdx.o] || ''),
-        dec: String(r[colIdx.dec] || ''),
-        sys: String(r[colIdx.sys] || ''),
-        nt: String(r[colIdx.nt] || ''),
-        dr: String(r[colIdx.st] || '').toLowerCase() === 'draft' ? 1 : 0,
-      });
+    const res = await fetch(REMOTE_JSON + '?t=' + Date.now());
+    if (!res.ok) return false;
+    const payload = await res.json();
+    if (!payload.overlays) return false;
+    // If local storage is empty, use the remote overlays as the starting point.
+    const localRaw = localStorage.getItem(STORAGE_KEY);
+    if (!localRaw) {
+      overlays = Object.assign({
+        added: [], edits: {}, deleted: [], order: {}, comments: {},
+      }, payload.overlays);
     }
-    if (imported.length > 0) {
-      modules = imported;
-      const srcEl = document.getElementById('dataSource');
-      if (srcEl) srcEl.textContent = `Live from GitHub (${imported.length} modules · loaded ${new Date().toLocaleTimeString()})`;
-    }
+    return true;
   } catch (err) {
-    console.warn('Remote xlsx fetch failed, using built-in scaffold:', err);
-    const srcEl = document.getElementById('dataSource');
-    if (srcEl) srcEl.textContent = `Built-in scaffold (${modules.length} modules) — remote fetch failed`;
+    return false;
   }
 }
 
 (async function init() {
-  await loadNotes();
-  await fetchRemoteXlsx();
+  loadOverlays();
+  baseModules = JSON.parse(JSON.stringify(SCAFFOLD));
+  baseModules.forEach(m => { if (!m.id) m.id = stableId(m); });
+  await fetchRemoteJSON();
+  rebuildModules();
   renderOverview();
 })();
 </script>
