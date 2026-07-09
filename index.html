@@ -6,28 +6,40 @@
 <title>Billing EL Program Dashboard</title>
 <style>
 :root {
-  /* Brand */
+  /* Brand — primary */
   --navy: #263746;
   --navy-deep: #1a2744;
   --navy-soft: #3a4f63;
+  --navy-mid: #586470;
   --lavender: #D1D8ED;
   --lavender-light: #E8ECF5;
   --lavender-deep: #B8C2DD;
   --gray-body: #555759;
-  --gray-light: #C4C8CD;
+  --gray-light: #D2D3D3;
   --gray-callout: #C4C8CD;
   --white: #FFFFFF;
   --cream: #FAFAF7;
 
-  /* Surface system — warm, layered, not white */
-  --bg-page: #ECEFF5;
+  /* Surface — darker page, white cards for lift */
+  --bg-page: #B1BEE0;         /* sequential blue, brand */
+  --bg-page-deep: #96A9D6;
   --bg-card: #FFFFFF;
   --bg-card-soft: #F4F6FB;
   --bg-elevated: #FFFFFF;
-  --border-soft: #DCE0EB;
-  --border-strong: #C4CADB;
+  --border-soft: #CBD3EA;
+  --border-strong: #A3B3DB;
 
-  /* Process colors from brand guide */
+  /* Week accents — brand blue vs brand green, high contrast on light */
+  --week1-bg: rgba(33, 114, 183, 0.12);
+  --week1-bg-deep: rgba(33, 114, 183, 0.28);
+  --week1-border: #2172B7;         /* brand blue */
+  --week1-accent: #4A9DE0;         /* lighter blue */
+  --week2-bg: rgba(119, 188, 31, 0.12);
+  --week2-bg-deep: rgba(119, 188, 31, 0.28);
+  --week2-border: #77BC1F;         /* brand green */
+  --week2-accent: #5A9718;         /* deeper green for text/rails */
+
+  /* Process colors — reserved for billing lifecycle content only */
   --p-collect: #D31E1E;
   --p-prep: #FF8300;
   --p-calc: #FEBE10;
@@ -35,27 +47,25 @@
   --p-bill: #2172B7;
   --p-recovery: #680054;
 
-  /* Status — muted, brand-aligned */
-  --draft-bg: #FFF4D6;
-  --draft-border: #F0B429;
-  --draft-text: #8A6200;
-  --good-bg: #E0EBD4;
-  --good-text: #4A7A1F;
-  --warn-bg: #F5D6D6;
+  /* Status — brand-aligned */
+  --draft-bg: #FFE8CC;
+  --draft-border: #FF8300;      /* brand orange */
+  --draft-text: #7A3F00;
+  --good-bg: #C5EBDB;
+  --good-border: #009D66;       /* tertiary darker green — full capacity */
+  --good-text: #005F3C;
+  --warn-bg: #FFD6CC;
+  --warn-border: #FD5F46;       /* tertiary red-orange — over budget */
   --warn-text: #A8302F;
 
-  --shadow-sm: 0 1px 2px rgba(38,55,70,0.06);
-  --shadow-md: 0 4px 12px rgba(38,55,70,0.08);
+  --shadow-sm: 0 1px 2px rgba(38,55,70,0.08);
+  --shadow-md: 0 4px 14px rgba(38,55,70,0.10);
   --shadow-lg: 0 8px 24px rgba(38,55,70,0.12);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: 'Roboto', Arial, sans-serif;
-  background: var(--bg-page);
-  background-image:
-    radial-gradient(circle at 12% 8%, rgba(209,216,237,0.6) 0%, transparent 45%),
-    radial-gradient(circle at 88% 92%, rgba(209,216,237,0.45) 0%, transparent 50%);
-  background-attachment: fixed;
+  background: #E8EDF5;
   color: var(--gray-body);
   font-size: 14px;
   line-height: 1.5;
@@ -72,9 +82,10 @@ header {
   align-items: center;
   flex-wrap: wrap;
   gap: 16px;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 24px rgba(38, 55, 70, 0.20);
   position: relative;
   overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 header::before {
   content: "";
@@ -174,13 +185,18 @@ header .subtitle {
 
 /* ===== TABS ===== */
 .tabs {
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border-soft);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(38, 55, 70, 0.08);
   padding: 0 32px;
   display: flex;
   gap: 2px;
   overflow-x: auto;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 2px 12px rgba(38, 55, 70, 0.06);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 .tab {
   background: none;
@@ -198,12 +214,12 @@ header .subtitle {
 }
 .tab:hover {
   color: var(--navy);
-  background: var(--bg-card-soft);
+  background: rgba(255, 255, 255, 0.4);
 }
 .tab.active {
   color: var(--navy);
-  border-bottom-color: var(--navy);
-  background: var(--bg-card-soft);
+  border-bottom-color: var(--week1-border);
+  background: rgba(255, 255, 255, 0.6);
 }
 
 /* ===== MAIN ===== */
@@ -240,26 +256,25 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
   margin-bottom: 32px;
 }
 .kpi {
-  background: var(--bg-card);
-  border-radius: 10px;
-  padding: 18px 20px;
-  border: 1px solid var(--border-soft);
-  border-left: 4px solid var(--navy);
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.15s, box-shadow 0.15s;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-radius: 14px;
+  padding: 20px 22px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-left: 4px solid rgba(38, 55, 70, 0.35);
+  box-shadow:
+    0 8px 32px rgba(38, 55, 70, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   position: relative;
   overflow: hidden;
 }
-.kpi:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-.kpi::after {
-  content: "";
-  position: absolute;
-  top: -30px; right: -30px;
-  width: 80px; height: 80px;
-  border-radius: 50%;
-  background: var(--lavender-light);
-  opacity: 0.5;
-  pointer-events: none;
+.kpi:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 40px rgba(38, 55, 70, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 .kpi > * { position: relative; z-index: 1; }
 .kpi-label {
@@ -285,23 +300,83 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
 }
 .kpi.warn { border-left-color: var(--draft-border); }
 .kpi.warn::after { background: var(--draft-bg); }
-.kpi.good { border-left-color: var(--good-text); }
+.kpi.good { border-left-color: var(--good-border); }
 .kpi.good::after { background: var(--good-bg); }
+.kpi.good .kpi-value { color: var(--good-text); }
 
 /* ===== DAY CARDS ===== */
+.week-section {
+  margin-bottom: 28px;
+}
+.week-section-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    0 4px 20px rgba(38, 55, 70, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.week-section-header .rail {
+  display: inline-block;
+  width: 44px;
+  height: 4px;
+  border-radius: 2px;
+}
+.week-section.week-1 .week-section-header {
+  color: var(--week1-border);
+  background: rgba(33, 114, 183, 0.10);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(33, 114, 183, 0.30);
+  border-left: 4px solid var(--week1-border);
+}
+.week-section.week-1 .week-section-header .rail { background: var(--week1-border); }
+.week-section.week-2 .week-section-header {
+  color: var(--week2-accent);
+  background: rgba(119, 188, 31, 0.12);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(119, 188, 31, 0.40);
+  border-left: 4px solid var(--week2-border);
+}
+.week-section.week-2 .week-section-header .rail { background: var(--week2-border); }
 .day-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
   gap: 18px;
 }
+/* Week 1 = 3 days, always 3 columns on desktop */
+.week-section.week-1 .day-grid { grid-template-columns: repeat(3, 1fr); }
+/* Week 2 = 5 days, always 5 columns on desktop so Day 10 stays with its cohort */
+.week-section.week-2 .day-grid { grid-template-columns: repeat(5, 1fr); }
+@media (max-width: 1100px) {
+  .week-section.week-2 .day-grid { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+  .week-section.week-1 .day-grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+}
+@media (max-width: 700px) {
+  .week-section.week-2 .day-grid,
+  .week-section.week-1 .day-grid { grid-template-columns: 1fr; }
+}
 .day-card {
-  background: var(--bg-card);
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-radius: 14px;
   padding: 20px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid var(--border-soft);
-  box-shadow: var(--shadow-sm);
+  transition: all 0.25s cubic-bezier(.2,.8,.2,1);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 8px 32px rgba(38, 55, 70, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
   position: relative;
   overflow: hidden;
 }
@@ -309,14 +384,22 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
   content: "";
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--navy), var(--navy-soft));
-  opacity: 0.85;
+  height: 4px;
+  background: linear-gradient(90deg, var(--week1-border), var(--week1-accent));
+  opacity: 1;
 }
+/* Week 1 — blue */
+.day-card.week-1::before { background: linear-gradient(90deg, var(--week1-border), #4A9DE0); }
+.day-card.week-1 { border-color: rgba(33, 114, 183, 0.30); }
+.day-card.week-1:hover { border-color: var(--week1-border); box-shadow: 0 14px 42px rgba(33, 114, 183, 0.20), inset 0 1px 0 rgba(255, 255, 255, 0.7); }
+/* Week 2 — gold */
+.day-card.week-2::before { background: linear-gradient(90deg, var(--week2-accent), var(--week2-border)); }
+.day-card.week-2 { border-color: rgba(119, 188, 31, 0.45); }
+.day-card.week-2:hover { border-color: var(--week2-border); box-shadow: 0 14px 42px rgba(119, 188, 31, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.7); }
+
+.day-card > * { position: relative; z-index: 1; }
 .day-card:hover {
   transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--lavender-deep);
 }
 .day-card-header {
   display: flex;
@@ -330,32 +413,83 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
   font-weight: 700;
   letter-spacing: -0.2px;
 }
+.week-badge {
+  display: inline-block;
+  font-size: 9px;
+  letter-spacing: 1.4px;
+  color: var(--white);
+  background: var(--week1-accent);
+  padding: 3px 9px;
+  border-radius: 10px;
+  font-weight: 700;
+  margin-left: 10px;
+  vertical-align: middle;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(20, 83, 145, 0.25);
+}
+.day-card.week-2 .week-badge {
+  background: var(--week2-accent);
+  box-shadow: 0 2px 8px rgba(74, 0, 58, 0.25);
+}
 .day-card .day-status {
   font-size: 10px;
   font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 12px;
-  letter-spacing: 1px;
+  padding: 5px 12px;
+  border-radius: 14px;
+  letter-spacing: 1.4px;
   text-transform: uppercase;
+  border: 1px solid transparent;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
-.day-status.full { background: var(--good-bg); color: var(--good-text); }
-.day-status.under { background: var(--draft-bg); color: var(--draft-text); }
-.day-status.over { background: var(--warn-bg); color: var(--warn-text); }
+.day-status.full {
+  background: rgba(0, 157, 102, 0.14);
+  color: var(--good-text);
+  border-color: rgba(0, 157, 102, 0.45);
+}
+.day-status.under {
+  background: rgba(38, 55, 70, 0.08);
+  color: var(--navy);
+  border-color: rgba(38, 55, 70, 0.25);
+}
+.day-status.over {
+  background: rgba(253, 95, 70, 0.14);
+  color: var(--warn-text);
+  border-color: rgba(253, 95, 70, 0.45);
+}
 .day-card-bar {
   height: 8px;
-  background: var(--lavender-light);
-  border-radius: 4px;
+  background: rgba(38, 55, 70, 0.10);
+  border-radius: 6px;
   overflow: hidden;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+  box-shadow: inset 0 1px 2px rgba(38, 55, 70, 0.15);
 }
 .day-card-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--navy) 0%, var(--navy-soft) 100%);
-  transition: width 0.4s ease;
-  border-radius: 4px;
+  background: linear-gradient(90deg, #2172B7 0%, #4A9DE0 100%);
+  transition: width 0.5s cubic-bezier(.2,.8,.2,1);
+  border-radius: 6px;
+  box-shadow: 0 0 6px rgba(33, 114, 183, 0.35);
 }
-.day-card-bar-fill.over {
-  background: linear-gradient(90deg, var(--warn-text) 0%, #C84545 100%);
+/* Week-1 cards get blue fill (matches accent) */
+.day-card.week-1 .day-card-bar-fill {
+  background: linear-gradient(90deg, #2172B7 0%, #4A9DE0 100%);
+  box-shadow: 0 0 6px rgba(33, 114, 183, 0.35);
+}
+/* Week-2 cards get gold fill (matches accent) */
+.day-card.week-2 .day-card-bar-fill {
+  background: linear-gradient(90deg, var(--week2-accent) 0%, var(--week2-border) 100%);
+  box-shadow: 0 0 6px rgba(119, 188, 31, 0.45);
+}
+/* State overrides — full = green, over = red-orange */
+.day-card .day-card-bar-fill.full {
+  background: linear-gradient(90deg, var(--good-border) 0%, #4CB88C 100%);
+  box-shadow: 0 0 8px rgba(0, 157, 102, 0.40);
+}
+.day-card .day-card-bar-fill.over {
+  background: linear-gradient(90deg, var(--warn-border) 0%, #E04A32 100%);
+  box-shadow: 0 0 8px rgba(253, 95, 70, 0.40);
 }
 .day-card-meta {
   font-size: 12px;
@@ -371,33 +505,61 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
 }
 .draft-pill {
   display: inline-block;
-  background: var(--draft-bg);
-  color: var(--draft-text);
-  padding: 3px 8px;
-  border-radius: 10px;
+  background: rgba(255, 131, 0, 0.15);
+  color: #B85A00;
+  padding: 4px 10px;
+  border-radius: 12px;
   font-size: 10px;
   font-weight: 700;
   margin-top: 10px;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.6px;
+  border: 1px solid rgba(255, 131, 0, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  text-transform: uppercase;
 }
 
 /* ===== WEEK VIEW ===== */
 .week-card {
-  background: var(--bg-card);
-  border-radius: 12px;
-  padding: 28px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-radius: 16px;
+  padding: 28px 28px 28px 32px;
   margin-bottom: 24px;
-  border: 1px solid var(--border-soft);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-left: 6px solid var(--week1-border);
+  box-shadow:
+    0 12px 40px rgba(38, 55, 70, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  position: relative;
 }
+.week-card.week-2 { border-left-color: var(--week2-border); }
 .week-card h2 {
   color: var(--navy);
-  font-size: 20px;
+  font-size: 22px;
   margin-bottom: 20px;
   padding-bottom: 14px;
   border-bottom: 2px solid var(--lavender);
-  letter-spacing: -0.2px;
+  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
+.week-card h2::before {
+  content: attr(data-week);
+  display: inline-block;
+  background: var(--week1-accent);
+  color: var(--white);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.week-card.week-2 h2::before { background: var(--week2-accent); }
 .week-card h2 .week-sub {
   font-weight: 400;
   color: var(--gray-body);
@@ -412,8 +574,10 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
 
 /* ===== DAY VIEW ===== */
 .day-header {
-  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-soft) 100%);
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-radius: 14px;
   padding: 22px 26px;
   margin-bottom: 18px;
   display: flex;
@@ -421,8 +585,10 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
   align-items: center;
   flex-wrap: wrap;
   gap: 14px;
-  border: 1px solid var(--border-soft);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 8px 32px rgba(38, 55, 70, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 .day-header h2 {
   color: var(--navy);
@@ -432,23 +598,30 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
 .day-select {
   padding: 10px 16px;
   font-size: 14px;
-  border: 1px solid var(--border-strong);
-  border-radius: 6px;
+  border: 1px solid rgba(38, 55, 70, 0.20);
+  border-radius: 8px;
   font-family: inherit;
-  background: var(--bg-card);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   color: var(--navy);
   font-weight: 600;
   cursor: pointer;
   transition: border-color 0.15s;
 }
-.day-select:focus { outline: none; border-color: var(--navy); }
+.day-select:focus { outline: none; border-color: var(--week1-border); }
+.day-select option { background: var(--white); color: var(--navy); }
 .day-budget-bar {
-  background: var(--bg-card);
-  border-radius: 10px;
-  padding: 18px 26px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-radius: 14px;
+  padding: 20px 26px;
   margin-bottom: 22px;
-  border: 1px solid var(--border-soft);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 8px 32px rgba(38, 55, 70, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 .budget-stats {
   display: flex;
@@ -457,31 +630,41 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
   font-size: 13px;
   gap: 12px;
   flex-wrap: wrap;
+  color: var(--gray-body);
 }
 .budget-stats span strong { color: var(--navy); font-weight: 700; font-size: 14px; }
 .budget-bar {
   height: 12px;
-  background: var(--lavender-light);
+  background: rgba(38, 55, 70, 0.10);
   border-radius: 6px;
   overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(38, 55, 70, 0.15);
 }
 .budget-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--navy) 0%, var(--navy-soft) 100%);
-  transition: width 0.4s ease;
+  background: linear-gradient(90deg, #2172B7 0%, #4A9DE0 100%);
+  transition: width 0.5s cubic-bezier(.2,.8,.2,1);
   border-radius: 6px;
+  box-shadow: 0 0 8px rgba(33, 114, 183, 0.35);
+}
+.budget-bar-fill.full {
+  background: linear-gradient(90deg, var(--good-border) 0%, #4CB88C 100%);
+  box-shadow: 0 0 10px rgba(0, 157, 102, 0.4);
 }
 .budget-bar-fill.over {
-  background: linear-gradient(90deg, var(--warn-text) 0%, #C84545 100%);
+  background: linear-gradient(90deg, var(--warn-border) 0%, #E04A32 100%);
+  box-shadow: 0 0 10px rgba(253, 95, 70, 0.4);
 }
 .otj-note {
   margin-top: 12px;
-  padding: 8px 12px;
-  background: var(--lavender-light);
-  border-radius: 6px;
+  padding: 10px 14px;
+  background: rgba(33, 114, 183, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 8px;
   font-size: 12px;
   color: var(--navy-soft);
-  border-left: 3px solid var(--navy);
+  border-left: 3px solid var(--week1-border);
 }
 .otj-note strong { color: var(--navy); }
 
@@ -489,20 +672,26 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
 .module-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 .module-card {
-  background: var(--bg-card);
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-radius: 14px;
   padding: 18px 22px;
-  border: 1px solid var(--border-soft);
-  border-left: 4px solid var(--gray-light);
-  box-shadow: var(--shadow-sm);
-  transition: all 0.15s;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-left: 4px solid rgba(38, 55, 70, 0.20);
+  box-shadow:
+    0 6px 24px rgba(38, 55, 70, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transition: all 0.2s ease;
 }
 .module-card:hover {
-  box-shadow: var(--shadow-md);
-  border-color: var(--lavender-deep);
+  box-shadow:
+    0 10px 32px rgba(38, 55, 70, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border-color: rgba(38, 55, 70, 0.30);
 }
 .module-card.draft { border-left-color: var(--draft-border); }
 .module-card-header {
@@ -537,6 +726,7 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
   color: var(--navy);
   letter-spacing: 0.5px;
   text-transform: uppercase;
+  border: 1px solid rgba(38, 55, 70, 0.10);
 }
 .mins-pill {
   font-size: 11px;
@@ -668,8 +858,9 @@ body.stakeholder .day-card:hover { transform: none; box-shadow: var(--shadow-sm)
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(26,39,68,0.55);
-  backdrop-filter: blur(3px);
+  background: rgba(26,39,68,0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   z-index: 100;
   align-items: flex-start;
   justify-content: center;
@@ -678,13 +869,17 @@ body.stakeholder .day-card:hover { transform: none; box-shadow: var(--shadow-sm)
 }
 .modal-backdrop.show { display: flex; }
 .modal {
-  background: var(--bg-card);
-  border-radius: 12px;
-  padding: 28px 32px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border-radius: 18px;
+  padding: 30px 34px;
   width: 100%;
   max-width: 720px;
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border-soft);
+  box-shadow:
+    0 24px 60px rgba(38, 55, 70, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 .modal h2 {
   color: var(--navy);
@@ -912,19 +1107,29 @@ body.stakeholder .comments-section { display: block; }
   gap: 6px;
 }
 .compact-row {
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
-  border-left: 4px solid var(--gray-light);
-  border-radius: 8px;
-  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-left: 4px solid rgba(38, 55, 70, 0.15);
+  border-radius: 12px;
+  padding: 12px 16px;
   display: grid;
   grid-template-columns: auto 60px 1fr auto auto auto auto auto;
   gap: 12px;
   align-items: center;
   font-size: 12.5px;
-  transition: all 0.15s;
+  transition: all 0.2s ease;
+  box-shadow:
+    0 4px 16px rgba(38, 55, 70, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
-.compact-row:hover { box-shadow: var(--shadow-sm); border-color: var(--lavender-deep); }
+.compact-row:hover {
+  box-shadow:
+    0 8px 24px rgba(38, 55, 70, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border-color: rgba(38, 55, 70, 0.25);
+}
 .compact-row.draft { border-left-color: var(--draft-border); }
 .compact-row.dragging { opacity: 0.4; }
 .compact-row.drag-over { border-top: 3px solid var(--navy); }
@@ -996,6 +1201,33 @@ body.stakeholder .compact-row .drag-handle { display: none; }
   pointer-events: none;
 }
 .toast.show { opacity: 1; transform: translateY(0); }
+
+
+/* ============================================
+   LIGHT MODE POLISH
+   Semantic KPI border colors + colored KPI values for good/warn.
+   ============================================ */
+
+/* KPI semantic border colors — Total / Scheduled / Fill / Draft */
+.kpi-row .kpi:nth-child(1) { border-left-color: rgba(38, 55, 70, 0.35); }
+.kpi-row .kpi:nth-child(2) { border-left-color: var(--week1-border); }
+.kpi-row .kpi:nth-child(3) { border-left-color: var(--week1-border); }
+.kpi-row .kpi:nth-child(3).good { border-left-color: var(--good-border); }
+.kpi-row .kpi:nth-child(3).warn { border-left-color: var(--draft-border); }
+.kpi-row .kpi:nth-child(4) { border-left-color: var(--draft-border); }
+.kpi.good .kpi-value { color: var(--good-border); }
+.kpi.warn .kpi-value { color: #B85A00; }
+
+/* Toast */
+.toast {
+  background: var(--navy);
+  color: var(--white);
+  box-shadow: 0 12px 40px rgba(38, 55, 70, 0.30);
+}
+
+/* Empty state */
+.empty { color: var(--gray-body); }
+
 </style>
 </head>
 <body>
@@ -1028,7 +1260,7 @@ body.stakeholder .compact-row .drag-handle { display: none; }
   <!-- OVERVIEW -->
   <div id="view-overview" class="view active">
     <div class="kpi-row" id="kpiRow"></div>
-    <div class="day-grid" id="dayGrid"></div>
+    <div id="dayGrid"></div>
   </div>
 
   <!-- WEEK -->
@@ -1422,35 +1654,59 @@ function renderOverview() {
     </div>
   `;
 
-  document.getElementById('dayGrid').innerHTML = days.map(d => {
-    const dayMods = modules.filter(m => m.d === d);
-    const sched = dayMods.reduce((s, m) => s + (m.m || 0), 0);
-    const draftCount = dayMods.filter(m => m.dr).length;
-    const status = dayStatus(sched, DAY_BUDGET);
-    const pct = Math.min(100, (sched / DAY_BUDGET) * 100);
-    return `
-      <div class="day-card" onclick="goToDay(${d})">
-        <div class="day-card-header">
-          <h3>Day ${d}</h3>
-          <span class="day-status ${status}">${status.toUpperCase()}</span>
-        </div>
-        <div class="day-card-bar">
-          <div class="day-card-bar-fill ${status === 'over' ? 'over' : ''}" style="width:${pct}%"></div>
-        </div>
-        <div class="day-card-meta">
-          <span><strong>${sched}</strong> / ${DAY_BUDGET} min</span>
-          <span>${dayMods.length} modules</span>
-        </div>
-        ${draftCount > 0 ? `<div class="draft-pill">${draftCount} draft</div>` : ''}
+  document.getElementById('dayGrid').innerHTML = `
+    <div class="week-section week-1">
+      <div class="week-section-header">
+        <span class="rail"></span>
+        Week 1 · Days 3 – 5
       </div>
-    `;
-  }).join('');
+      <div class="day-grid">
+        ${[3,4,5].map(d => renderDayCard(d)).join('')}
+      </div>
+    </div>
+    <div class="week-section week-2">
+      <div class="week-section-header">
+        <span class="rail"></span>
+        Week 2 · Days 6 – 10
+      </div>
+      <div class="day-grid">
+        ${[6,7,8,9,10].map(d => renderDayCard(d)).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderDayCard(d) {
+  const dayMods = modules.filter(m => m.d === d);
+  const sched = dayMods.reduce((s, m) => s + (m.m || 0), 0);
+  const draftCount = dayMods.filter(m => m.dr).length;
+  const status = dayStatus(sched, DAY_BUDGET);
+  const pct = Math.min(100, (sched / DAY_BUDGET) * 100);
+  const weekClass = d <= 5 ? 'week-1' : 'week-2';
+  const weekLabel = d <= 5 ? 'W1' : 'W2';
+  const barClass = status === 'over' ? 'over' : (status === 'full' ? 'full' : '');
+  return `
+    <div class="day-card ${weekClass}" onclick="goToDay(${d})">
+      <div class="day-card-header">
+        <h3>Day ${d}<span class="week-badge">${weekLabel}</span></h3>
+        <span class="day-status ${status}">${status.toUpperCase()}</span>
+      </div>
+      <div class="day-card-bar">
+        <div class="day-card-bar-fill ${barClass}" style="width:${pct}%"></div>
+      </div>
+      <div class="day-card-meta">
+        <span><strong>${sched}</strong> / ${DAY_BUDGET} min</span>
+        <span>${dayMods.length} modules</span>
+      </div>
+      ${draftCount > 0 ? `<div class="draft-pill">${draftCount} draft</div>` : ''}
+    </div>
+  `;
 }
 
 function renderWeek() {
   const weeks = [
-    { label: 'Week 1', days: [3,4,5], desc: 'Days 3 – 5' },
-    { label: 'Week 2', days: [6,7,8,9,10], desc: 'Days 6 – 10' },
+    { label: 'Week 1', days: [3,4,5], desc: 'Days 3 – 5', cls: '' },
+    { label: 'Week 2', days: [6,7,8,9,10], desc: 'Days 6 – 10', cls: 'week-2' },
   ];
   document.getElementById('weekContent').innerHTML = weeks.map(w => {
     const wkSched = w.days.reduce((s, d) =>
@@ -1459,8 +1715,8 @@ function renderWeek() {
     const wkPct = ((wkSched / wkBudget) * 100).toFixed(1);
     const wkMods = w.days.reduce((s, d) => s + modules.filter(m => m.d === d).length, 0);
     return `
-      <div class="week-card">
-        <h2>${w.label} <span class="week-sub">— ${w.desc}</span></h2>
+      <div class="week-card ${w.cls}">
+        <h2 data-week="${w.label}"><span class="week-sub">${w.desc}</span></h2>
         <div class="kpi-row" style="margin-bottom:18px;">
           <div class="kpi"><div class="kpi-label">Scheduled</div><div class="kpi-value">${wkSched} min</div></div>
           <div class="kpi"><div class="kpi-label">Budget</div><div class="kpi-value">${wkBudget} min</div></div>
@@ -1473,14 +1729,17 @@ function renderWeek() {
             const sched = dayMods.reduce((s, m) => s + (m.m || 0), 0);
             const status = dayStatus(sched, DAY_BUDGET);
             const pct = Math.min(100, (sched / DAY_BUDGET) * 100);
+            const weekClass = d <= 5 ? 'week-1' : 'week-2';
+            const weekLabel = d <= 5 ? 'W1' : 'W2';
+            const barClass = status === 'over' ? 'over' : (status === 'full' ? 'full' : '');
             return `
-              <div class="day-card" onclick="goToDay(${d})">
+              <div class="day-card ${weekClass}" onclick="goToDay(${d})">
                 <div class="day-card-header">
-                  <h3>Day ${d}</h3>
+                  <h3>Day ${d}<span class="week-badge">${weekLabel}</span></h3>
                   <span class="day-status ${status}">${status.toUpperCase()}</span>
                 </div>
                 <div class="day-card-bar">
-                  <div class="day-card-bar-fill ${status === 'over' ? 'over' : ''}" style="width:${pct}%"></div>
+                  <div class="day-card-bar-fill ${barClass}" style="width:${pct}%"></div>
                 </div>
                 <div class="day-card-meta">
                   <span><strong>${sched}</strong> / ${DAY_BUDGET} min</span>
@@ -1519,7 +1778,7 @@ function renderDay() {
         <span>Remaining: <strong style="color:${remaining < 0 ? 'var(--warn-text)' : 'var(--navy)'}">${remaining}</strong> min</span>
       </div>
       <div class="budget-bar">
-        <div class="budget-bar-fill ${status === 'over' ? 'over' : ''}" style="width:${pct}%"></div>
+        <div class="budget-bar-fill ${status === 'over' ? 'over' : (status === 'full' ? 'full' : '')}" style="width:${pct}%"></div>
       </div>
       ${otjMins > 0 ? `<div class="otj-note"><strong>OTJ time:</strong> ${otjMins} min — counts toward day total</div>` : ''}
     </div>
