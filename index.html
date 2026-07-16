@@ -980,7 +980,7 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
 }
 .route-day-pill.done { background: rgba(119,188,31,0.20); border-color: rgba(119,188,31,0.55); color: #A9E065; }
 .route-day-pill.active { background: rgba(33,114,183,0.20); border-color: rgba(33,114,183,0.55); color: #6BB4E8; }
-.route-day-pill.pending { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.20); color: rgba(255,255,255,0.55); }
+.route-day-pill.pending { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.20); color: rgba(255,255,255,0.65); }
 .route-day-progress {
   height: 6px;
   background: rgba(255,255,255,0.08);
@@ -1319,6 +1319,89 @@ body.stakeholder header { background: linear-gradient(135deg, var(--navy-deep) 0
 body.stakeholder .day-card { cursor: default; }
 body.stakeholder .day-card:hover { transform: none; box-shadow: var(--shadow-sm); border-color: var(--border-soft); }
 
+/* ===== LIFECYCLE STAGE COLOR CODING =====
+   Applies process color as the LEFT BORDER of module cards and compact rows,
+   plus a small chip in the header. This is the visual bridge between the
+   dashboard and the Big Picture / Content Style Guide palette. */
+.module-card.stage-collect,
+.compact-row.stage-collect  { border-left-color: var(--p-collect); }
+.module-card.stage-prep,
+.compact-row.stage-prep     { border-left-color: var(--p-prep); }
+.module-card.stage-calc,
+.compact-row.stage-calc     { border-left-color: var(--p-calc); }
+.module-card.stage-quality,
+.compact-row.stage-quality  { border-left-color: var(--p-quality); }
+.module-card.stage-bill,
+.compact-row.stage-bill     { border-left-color: var(--p-bill); }
+.module-card.stage-recovery,
+.compact-row.stage-recovery { border-left-color: var(--p-recovery); }
+
+.stage-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 9px 3px 8px;
+  border-radius: 10px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--white);
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.stage-chip::before {
+  content: "";
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.85);
+}
+.stage-chip.stage-collect  { background: var(--p-collect); }
+.stage-chip.stage-prep     { background: var(--p-prep); }
+.stage-chip.stage-calc     { background: var(--p-calc); color: var(--navy); }
+.stage-chip.stage-calc::before { background: var(--navy); }
+.stage-chip.stage-quality  { background: var(--p-quality); }
+.stage-chip.stage-bill     { background: var(--p-bill); }
+.stage-chip.stage-recovery { background: var(--p-recovery); }
+.stage-chip.stage-comms {
+  background: var(--white);
+  color: var(--navy);
+  border-color: var(--navy-soft);
+}
+.stage-chip.stage-comms::before { background: var(--navy); }
+.stage-chip.stage-none {
+  background: var(--lavender-light);
+  color: var(--navy-soft);
+  border-color: var(--lavender-deep);
+}
+.stage-chip.stage-none::before { background: var(--navy-soft); }
+
+/* Stage legend on Overview */
+.stage-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: -8px 0 24px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.55);
+  border-radius: 12px;
+  align-items: center;
+  font-size: 11px;
+  color: var(--navy-soft);
+}
+.stage-legend .legend-label {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--navy-soft);
+  font-weight: 700;
+  margin-right: 4px;
+}
+
 /* Print */
 @media print {
   header, .tabs, .header-controls, .module-notes, .import-banner { display: none !important; }
@@ -1618,7 +1701,7 @@ body.stakeholder .comments-section { display: block; }
   border-radius: 12px;
   padding: 12px 16px;
   display: grid;
-  grid-template-columns: auto 60px 1fr auto auto auto auto auto auto;
+  grid-template-columns: auto 60px 1fr auto auto auto auto auto auto auto;
   gap: 12px;
   align-items: center;
   font-size: 12.5px;
@@ -1857,10 +1940,23 @@ body.stakeholder .compact-row .drag-handle { display: none; }
         </select>
       </div>
       <div class="form-field">
+        <label>Lifecycle Stage</label>
+        <select id="f-stage">
+          <option value="">— None / Foundational —</option>
+          <option value="collect">01 · Collect Data</option>
+          <option value="prep">02 · Prep Work</option>
+          <option value="calc">03 · Calculate Charges</option>
+          <option value="quality">04 · Quality Check</option>
+          <option value="bill">05 · Bill Residents</option>
+          <option value="recovery">06 · Recovery</option>
+          <option value="comms">Customer Communication (cross-cutting)</option>
+        </select>
+      </div>
+      <div class="form-field">
         <label>Status</label>
         <select id="f-status">
           <option value="ns">Not Started</option>
-          <option value="ip">In Progress</option>
+          <option value="ip">In Development</option>
           <option value="cp">Complete</option>
         </select>
       </div>
@@ -1929,7 +2025,7 @@ const SCAFFOLD = [
   {d:4,n:"Intro to Skywalker",m:45,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"Job Aid",o:"I can log into Skywalker, navigate the main views, and understand how it differs from YODA.",dec:"Skywalker or YODA for this task?",sys:"Skywalker",nt:"",dr:1},
   {d:4,n:"Bill Methods & Bill Setup — High-Level Introduction",m:45,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"",o:"I understand the major bill methods at a high level and know where bill setup lives in the system.",dec:"Which method applies to this property?",sys:"YODA, Skywalker",nt:"Depth comes Day 6-7",dr:1},
   {d:4,n:"Regulations",m:20,c:"ILT",a1:"Facilitator Guide",a2:"Reference Doc",a3:"",o:"I know the categories of state regulations that affect billing and where to look them up.",dec:"Is this state regulated? Where do I check?",sys:"Knowledge Base",nt:"",dr:1},
-  {d:4,n:"Bill Dates Tab (2 Part)",m:60,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"Dev YODA Practice",o:"I can correctly set bill dates in YODA — rent dates, Conservice utility dates, post month, and total date range — and I know when to flag a date that doesn't look right.",dec:"Does the post month match the cycle? Are rent and Conservice dates aligned? Do I need to escalate this date setup?",sys:"YODA, Dev YODA",nt:"Krista pending on Dev YODA property access",dr:0},
+  {d:4,n:"Bill Dates Tab (2 Part)",m:60,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"Dev YODA Practice",o:"I can correctly set bill dates in YODA — rent dates, Conservice utility dates, post month, and total date range — and I know when to flag a date that doesn't look right.",dec:"Does the post month match the cycle? Are rent and Conservice dates aligned? Do I need to escalate this date setup?",sys:"YODA, Dev YODA",nt:"Module 1 (Expert Check) and Module 2 (Manual Date Entry in YODA) delivery-ready. Krista pending on Dev YODA property access for future guided practice.",st:"cp",stage:"calc"},
   {d:4,n:"Future Cycle Calculator (FCC)",m:30,c:"ILT",a1:"Facilitator Guide",a2:"Job Aid",a3:"",o:"I know what FCC is, what it does, and that I'll learn the mechanics in Day 8 Exceptions.",dec:"Awareness only — when would I use FCC?",sys:"YODA",nt:"Mechanics deferred to Day 8",dr:1},
   {d:4,n:"MIMO: What It Is and Where It Falls in the Workflow",m:30,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"",o:"I understand what MIMO (Move-In/Move-Out) is and where it fits in the billing workflow.",dec:"Is this a MIMO scenario? What does the cycle look like?",sys:"YODA, Skywalker",nt:"Deeper dive Day 5/7",dr:1},
   {d:4,n:"Scenario — Troubleshoot a Bill Dates Task",m:30,c:"Scenario",a1:"Facilitator Guide",a2:"Scenario Card",a3:"",o:"I can work through a bill dates scenario and identify what's wrong before fixing it.",dec:"What's wrong here? What's my next move?",sys:"YODA, Skywalker",nt:"",dr:1},
@@ -2000,7 +2096,7 @@ const SCAFFOLD = [
   {d:9,n:"EOD 9 Review",m:15,c:"ILT",a1:"Facilitator Guide",a2:"",a3:"",o:"I know how I did on the eval and what comes next.",dec:"Ready for Day 10?",sys:"Zoom",nt:"",dr:1},
 
   {d:10,n:"Day 10 Morning Review",m:15,c:"ILT",a1:"Facilitator Guide",a2:"",a3:"",o:"I can recall the eval outcomes and any remediation steps.",dec:"Open questions?",sys:"Zoom",nt:"",dr:1},
-  {d:10,n:"Customer Service Fundamentals",m:120,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"Participant Workbook",o:"I understand the CSR department's role, how my billing work upstream affects CSR downstream, how to use CSR Alerts and Billing Reminders correctly, and the urgency standards for EWOK tickets.",dec:"Does this need a CSR Alert? What's the right urgency threshold (24/48/5-day)? Reminder, Alert, or direct CSR contact?",sys:"EWOK, YODA, Skywalker, Email, Knowledge Base",nt:"Built, multiple review rounds complete",dr:0},
+  {d:10,n:"Customer Service Fundamentals",m:120,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"Participant Workbook",o:"I understand the CSR department's role, how my billing work upstream affects CSR downstream, how to use CSR Alerts and Billing Reminders correctly, and the urgency standards for EWOK tickets.",dec:"Does this need a CSR Alert? What's the right urgency threshold (24/48/5-day)? Reminder, Alert, or direct CSR contact?",sys:"EWOK, YODA, Skywalker, Email, Knowledge Base",nt:"Built, multiple review rounds complete",st:"cp",stage:"bill"},
   {d:10,n:"Exporting",m:60,c:"ILT",a1:"Facilitator Guide",a2:"Job Aid",a3:"Simulation",o:"I can complete the export step that pushes charges to property systems via EDE.",dec:"Right export settings? Right post month?",sys:"YODA, Skywalker, Obiwan",nt:"Step 06 of lifecycle",dr:1},
   {d:10,n:"Portfolio Management",m:45,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"Job Aid",o:"I can manage my portfolio: track goal dates, prioritize, communicate proactively with clients.",dec:"What needs my attention first?",sys:"YODA, Skywalker, Calendar, Email",nt:"",dr:1},
   {d:10,n:"A Day in the Life of a Billing Manager",m:45,c:"ILT",a1:"Facilitator Guide",a2:"Slide Deck",a3:"",o:"I have a realistic picture of a billing manager's day and the rhythm I'm stepping into.",dec:"How will I structure my own day?",sys:"Zoom",nt:"Sets up nesting expectations",dr:1},
@@ -2028,6 +2124,35 @@ let overlays = {
 
 const STORAGE_KEY = 'billing-el-overlays-v1';
 let editingId = null; // when set, modal is in edit mode
+
+// ===== STAGE INFERENCE =====
+// Maps module names to their billing-lifecycle stage. Anything not matched here
+// stays stage:'' (renders as no chip). Explicit `stage:` on a scaffold entry wins.
+const STAGE_INFERENCE = [
+  // Collect Data (01)
+  [/provider bill|reading key bill|meter read|collect data|inbox & macro/i, 'collect'],
+  // Prep Work (02)
+  [/prep|fusion 2\.0|data entry accuracy|utility amounts|inputting provider|documentation|admin amounts|bill setup/i, 'prep'],
+  // Calculate Charges (03)
+  [/bill dates|mimo|stats|calculation|billing method|submeter|meter|ramping|rent-only|fcc|future cycle|math/i, 'calc'],
+  // Quality Check (04)
+  [/quality check|qc|exception|exceptions & tasks|report|reports|prebill|critical thinking/i, 'quality'],
+  // Bill Residents (05)
+  [/^bill residents|utility messages|customer service|csr/i, 'bill'],
+  // Recovery (06)
+  [/recovery|export/i, 'recovery'],
+  // Cross-cutting Customer Communication
+  [/client communication|mock email/i, 'comms'],
+];
+function inferStage(m) {
+  if (m.stage) return m.stage;
+  const name = m.n || '';
+  for (const [rx, key] of STAGE_INFERENCE) {
+    if (rx.test(name)) return key;
+  }
+  return '';
+}
+
 
 // ===== ID GENERATION =====
 // Existing scaffold modules don't have IDs. We generate stable ones from day + name hash.
@@ -2074,6 +2199,8 @@ function rebuildModules() {
   const filtered = withIds.filter(m => !overlays.deleted.includes(m.id));
   const edited = filtered.map(m => overlays.edits[m.id] ? { ...m, ...overlays.edits[m.id] } : m);
   const combined = edited.concat(overlays.added);
+  // Fill in stage where missing (explicit stage always wins over inference)
+  combined.forEach(m => { m.stage = m.stage || inferStage(m); });
   // apply custom day order where present
   modules = combined;
 }
@@ -2123,7 +2250,30 @@ function getStatus(m) {
   return 'ns';                    // everything else = Not Started until confirmed
 }
 function statusLabel(st) {
-  return st === 'cp' ? 'Complete' : st === 'ip' ? 'In Progress' : 'Not Started';
+  return st === 'cp' ? 'Complete' : st === 'ip' ? 'In Development' : 'Not Started';
+}
+
+// Lifecycle stage → CSS class + human label. Keys match modal + scaffold `stage` field.
+const STAGE_LABELS = {
+  collect:  '01 Collect Data',
+  prep:     '02 Prep Work',
+  calc:     '03 Calculate Charges',
+  quality:  '04 Quality Check',
+  bill:     '05 Bill Residents',
+  recovery: '06 Recovery',
+  comms:    'Customer Comms',
+};
+function stageKey(m) {
+  return (m && m.stage && STAGE_LABELS[m.stage]) ? m.stage : '';
+}
+function stageClass(m) {
+  const k = stageKey(m);
+  return k ? `stage-${k}` : '';
+}
+function stageChip(m) {
+  const k = stageKey(m);
+  if (!k) return '';
+  return `<span class="stage-chip stage-${k}" title="Billing lifecycle: ${STAGE_LABELS[k]}">${STAGE_LABELS[k]}</span>`;
 }
 function statusPill(st) {
   return `<span class="status-pill ${st}"><span class="dot"></span>${statusLabel(st)}</span>`;
@@ -2214,11 +2364,21 @@ function renderOverview() {
     <div class="kpi ${completePct >= 50 ? 'good' : 'warn'}">
       <div class="kpi-label">Complete</div>
       <div class="kpi-value">${completePct}%</div>
-      <div class="kpi-sub">${countCP} done · ${countIP} in progress · ${countNS} not started</div>
+      <div class="kpi-sub">${countCP} delivery-ready · ${countIP} in development · ${countNS} not started</div>
     </div>
   `;
 
   document.getElementById('dayGrid').innerHTML = `
+    <div class="stage-legend" aria-label="Billing lifecycle color key">
+      <span class="legend-label">Lifecycle:</span>
+      <span class="stage-chip stage-collect">01 Collect</span>
+      <span class="stage-chip stage-prep">02 Prep</span>
+      <span class="stage-chip stage-calc">03 Calculate</span>
+      <span class="stage-chip stage-quality">04 QC</span>
+      <span class="stage-chip stage-bill">05 Bill</span>
+      <span class="stage-chip stage-recovery">06 Recovery</span>
+      <span class="stage-chip stage-comms">Comms</span>
+    </div>
     <div class="week-section week-1">
       <div class="week-section-header">
         <span class="rail"></span>
@@ -2281,8 +2441,7 @@ function renderDayCard(d) {
       </div>
       ${dayMods.length ? `
       <div class="day-completion-row">
-        <span class="label">Progress:</span>
-        ${pips}
+        <span class="label">Complete:</span>
         <span class="pct">${completePct}%</span>
       </div>` : ''}
     </div>
@@ -2377,7 +2536,7 @@ function renderTracker() {
   const inMotionPct = total ? (started / total) * 100 : 0;
 
   const stages = [
-    { key: 'scoped',  label: 'Scoped',        sub: 'Outlines & scope locked' },
+    { key: 'scoped',  label: 'Scoped',         sub: 'Outlines & scope locked' },
     { key: 'build',   label: 'In Development', sub: 'Content being built' },
     { key: 'review',  label: 'In Review',      sub: 'SME & stakeholder checks' },
     { key: 'ready',   label: 'Delivery-Ready', sub: 'On the floor' },
@@ -2428,9 +2587,10 @@ function renderTracker() {
     });
     const cpPct = Math.round((cp / dayMods.length) * 100);
     const ipPctDay = Math.round(((ip + cp) / dayMods.length) * 100);
-    let dayCls = 'pending', pillLabel = 'Pending';
-    if (cpPct === 100) { dayCls = 'done'; pillLabel = 'Ready'; }
-    else if (ip > 0 || cp > 0) { dayCls = 'active'; pillLabel = 'Building'; }
+    let dayCls = 'pending', pillLabel = 'Not Started';
+    if (cpPct === 100) { dayCls = 'done'; pillLabel = 'Delivery-Ready'; }
+    else if (cp > 0 && ip === 0 && cp < dayMods.length) { dayCls = 'active'; pillLabel = 'Partially Ready'; }
+    else if (ip > 0 || cp > 0) { dayCls = 'active'; pillLabel = 'In Development'; }
     return `
       <div class="route-day ${dayCls}" onclick="goToDay(${d})">
         <div class="route-day-head">
@@ -2442,7 +2602,7 @@ function renderTracker() {
           <div class="route-day-progress-cp" style="width:${cpPct}%"></div>
         </div>
         <div class="route-day-meta">
-          <span>${cp}/${dayMods.length} ready · ${ip} building</span>
+          <span>${cp}/${dayMods.length} delivery-ready · ${ip} in development</span>
           <span class="pct">${cpPct}%</span>
         </div>
       </div>
@@ -2552,14 +2712,16 @@ function renderDay() {
   dayMods.forEach(m => {
     const comments = overlays.comments[m.id] || [];
     const st = getStatus(m);
+    const sCls = stageClass(m);
     html += `
-      <div class="module-card st-${st}" data-id="${esc(m.id)}" draggable="true">
+      <div class="module-card st-${st} ${sCls}" data-id="${esc(m.id)}" draggable="true">
         <div class="module-card-header">
           <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:240px;">
             <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
             <div class="module-title">${esc(m.n)}</div>
           </div>
           <div class="module-meta">
+            ${stageChip(m)}
             ${statusPillClickable(m)}
             <span class="ct-pill">${esc(m.c) || '—'}</span>
             <span class="mins-pill">${m.m} min</span>
@@ -2669,12 +2831,14 @@ function renderAll() {
   const html = list.map(m => {
     const comments = overlays.comments[m.id] || [];
     const st = getStatus(m);
+    const sCls = stageClass(m);
     return `
-      <div class="compact-row st-${st}" data-id="${esc(m.id)}" draggable="true">
+      <div class="compact-row st-${st} ${sCls}" data-id="${esc(m.id)}" draggable="true">
         <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
         <span class="cr-day">Day ${m.d}</span>
         <span class="cr-title" title="${esc(m.n)}">${esc(m.n)}</span>
         ${statusPillClickable(m)}
+        ${stageChip(m)}
         <span class="cr-ct">${esc(m.c) || '—'}</span>
         <span class="cr-mins">${m.m || 0}m</span>
         <span class="cr-comments-count" title="${comments.length} comment${comments.length===1?'':'s'}">${comments.length ? '💬' + comments.length : ''}</span>
@@ -2747,6 +2911,7 @@ function openAddModal() {
   document.getElementById('f-mins').value = 30;
   document.getElementById('f-day').value = '3';
   document.getElementById('f-ct').value = 'ILT';
+  document.getElementById('f-stage').value = '';
   document.getElementById('f-status').value = 'ns';
   document.getElementById('modalBackdrop').classList.add('show');
   setTimeout(() => document.getElementById('f-name').focus(), 50);
@@ -2764,6 +2929,7 @@ function openEditModal(id) {
   document.getElementById('f-day').value = mod.d || 3;
   document.getElementById('f-mins').value = mod.m || 0;
   document.getElementById('f-ct').value = mod.c || 'ILT';
+  document.getElementById('f-stage').value = mod.stage || '';
   document.getElementById('f-status').value = getStatus(mod);
   document.getElementById('f-link').value = mod.link || '';
   document.getElementById('f-outcome').value = mod.o || '';
@@ -2790,6 +2956,7 @@ function collectForm() {
     d: parseInt(document.getElementById('f-day').value),
     m: parseInt(document.getElementById('f-mins').value) || 0,
     c: document.getElementById('f-ct').value,
+    stage: document.getElementById('f-stage').value,
     st: document.getElementById('f-status').value,
     link: document.getElementById('f-link').value.trim(),
     o: document.getElementById('f-outcome').value.trim(),
