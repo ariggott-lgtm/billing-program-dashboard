@@ -61,6 +61,29 @@
   --shadow-sm: 0 1px 2px rgba(38,55,70,0.08);
   --shadow-md: 0 4px 14px rgba(38,55,70,0.10);
   --shadow-lg: 0 8px 24px rgba(38,55,70,0.12);
+
+  /* Module status — Not Started / In Progress / Complete
+     Uses Conservice brand + process palette:
+     - In Progress uses brand blue (#2172B7 — Bill Residents process color, most brand-native)
+     - Complete uses brand green (#77BC1F — Quality Check process color, signals "passed")
+     - Not Started uses navy-tinted neutral (brand family, not a dead gray) */
+  --st-ns-bg: #E4E8F0;
+  --st-ns-border: #7A8698;
+  --st-ns-text: #3A4553;
+  --st-ip-bg: #D6E7F5;
+  --st-ip-border: #2172B7;
+  --st-ip-text: #144876;
+  --st-cp-bg: #DDF0C4;
+  --st-cp-border: #77BC1F;
+  --st-cp-text: #3F6B0F;
+
+  /* Capacity heat-map — walks the billing process colors in order.
+     Reads like the lifecycle itself: cool navy → prep orange → calculate yellow → QC green → over-budget red */
+  --cap-low: #B8C2DD;      /* < 50% — cool navy-lavender, quiet */
+  --cap-mid: #FEBE10;      /* 50-74% — Calculate Charges yellow, warming */
+  --cap-hot: #FF8300;      /* 75-99% — Prep Work orange, hot */
+  --cap-full: #77BC1F;     /* 100% — Quality Check green */
+  --cap-over: #D31E1E;     /* > 100% — Collect Data red, over budget */
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -298,11 +321,11 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
   margin-top: 6px;
   letter-spacing: 0.2px;
 }
-.kpi.warn { border-left-color: var(--draft-border); }
-.kpi.warn::after { background: var(--draft-bg); }
-.kpi.good { border-left-color: var(--good-border); }
-.kpi.good::after { background: var(--good-bg); }
-.kpi.good .kpi-value { color: var(--good-text); }
+.kpi.warn { border-left-color: var(--st-ip-border); }
+.kpi.warn::after { background: var(--st-ip-bg); }
+.kpi.good { border-left-color: var(--st-cp-border); }
+.kpi.good::after { background: var(--st-cp-bg); }
+.kpi.good .kpi-value { color: var(--st-cp-text); }
 
 /* ===== DAY CARDS ===== */
 .week-section {
@@ -467,29 +490,61 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
 }
 .day-card-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #2172B7 0%, #4A9DE0 100%);
-  transition: width 0.5s cubic-bezier(.2,.8,.2,1);
+  background: linear-gradient(90deg, var(--cap-low) 0%, var(--cap-low) 100%);
+  transition: width 0.5s cubic-bezier(.2,.8,.2,1), background 0.5s ease, box-shadow 0.5s ease;
   border-radius: 6px;
-  box-shadow: 0 0 6px rgba(33, 114, 183, 0.35);
+  box-shadow: 0 0 6px rgba(184, 194, 221, 0.4);
 }
-/* Week-1 cards get blue fill (matches accent) */
-.day-card.week-1 .day-card-bar-fill {
-  background: linear-gradient(90deg, #2172B7 0%, #4A9DE0 100%);
-  box-shadow: 0 0 6px rgba(33, 114, 183, 0.35);
+/* Capacity heat-map — walks the lifecycle color sequence:
+   cool navy → yellow (Calc Charges) → orange (Prep) → green (QC) → red (Collect) */
+.day-card .day-card-bar-fill.cap-cool {
+  background: linear-gradient(90deg, var(--cap-low) 0%, #A5B0CC 100%);
+  box-shadow: 0 0 4px rgba(184, 194, 221, 0.35);
 }
-/* Week-2 cards get gold fill (matches accent) */
-.day-card.week-2 .day-card-bar-fill {
-  background: linear-gradient(90deg, var(--week2-accent) 0%, var(--week2-border) 100%);
-  box-shadow: 0 0 6px rgba(119, 188, 31, 0.45);
+.day-card .day-card-bar-fill.cap-warm {
+  background: linear-gradient(90deg, #FED968 0%, var(--cap-mid) 100%);
+  box-shadow: 0 0 6px rgba(254, 190, 16, 0.40);
 }
-/* State overrides — full = green, over = red-orange */
-.day-card .day-card-bar-fill.full {
-  background: linear-gradient(90deg, var(--good-border) 0%, #4CB88C 100%);
-  box-shadow: 0 0 8px rgba(0, 157, 102, 0.40);
+.day-card .day-card-bar-fill.cap-hot {
+  background: linear-gradient(90deg, var(--cap-mid) 0%, var(--cap-hot) 100%);
+  box-shadow: 0 0 8px rgba(255, 131, 0, 0.45);
 }
-.day-card .day-card-bar-fill.over {
-  background: linear-gradient(90deg, var(--warn-border) 0%, #E04A32 100%);
-  box-shadow: 0 0 8px rgba(253, 95, 70, 0.40);
+.day-card .day-card-bar-fill.cap-full {
+  background: linear-gradient(90deg, var(--cap-full) 0%, #94D147 100%);
+  box-shadow: 0 0 10px rgba(119, 188, 31, 0.55);
+}
+.day-card .day-card-bar-fill.cap-over {
+  background: linear-gradient(90deg, var(--cap-over) 0%, #ED4A4A 100%);
+  box-shadow: 0 0 10px rgba(211, 30, 30, 0.55);
+  animation: pulseOver 2.2s ease-in-out infinite;
+}
+@keyframes pulseOver {
+  0%, 100% { box-shadow: 0 0 10px rgba(211, 30, 30, 0.55); }
+  50% { box-shadow: 0 0 16px rgba(211, 30, 30, 0.85); }
+}
+/* Full-capacity icon that appears when day hits 100% */
+.day-card-header .cap-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--cap-full);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  margin-left: 6px;
+  box-shadow: 0 0 8px rgba(119, 188, 31, 0.55);
+  animation: popIn 0.4s cubic-bezier(.34,1.56,.64,1);
+}
+.day-card-header .cap-icon.over {
+  background: var(--cap-over);
+  box-shadow: 0 0 8px rgba(211, 30, 30, 0.6);
+}
+@keyframes popIn {
+  0% { transform: scale(0); }
+  100% { transform: scale(1); }
 }
 .day-card-meta {
   font-size: 12px;
@@ -517,6 +572,449 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   text-transform: uppercase;
+}
+
+/* ===== TRI-STATE STATUS PILLS ===== */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  border: 1px solid;
+  white-space: nowrap;
+}
+.status-pill.ns { background: var(--st-ns-bg); color: var(--st-ns-text); border-color: var(--st-ns-border); }
+.status-pill.ip { background: var(--st-ip-bg); color: var(--st-ip-text); border-color: var(--st-ip-border); }
+.status-pill.cp { background: var(--st-cp-bg); color: var(--st-cp-text); border-color: var(--st-cp-border); }
+.status-pill.clickable {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  user-select: none;
+}
+.status-pill.clickable:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 3px 8px rgba(38,55,70,0.18);
+}
+.status-pill.clickable:active { transform: translateY(0); }
+.status-pill .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor;
+}
+.module-card.st-cp { border-left-color: var(--st-cp-border); background: linear-gradient(90deg, rgba(0,157,102,0.04) 0%, rgba(255,255,255,0) 40%); }
+.module-card.st-ip { border-left-color: var(--st-ip-border); }
+.module-card.st-ns { border-left-color: var(--st-ns-border); opacity: 0.92; }
+.compact-row.st-cp { border-left-color: var(--st-cp-border); }
+.compact-row.st-ip { border-left-color: var(--st-ip-border); }
+.compact-row.st-ns { border-left-color: var(--st-ns-border); }
+.day-card-completion-pip {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  margin-right: 2px;
+}
+.day-card-completion-pip.cp { background: var(--st-cp-border); }
+.day-card-completion-pip.ip { background: var(--st-ip-border); }
+.day-card-completion-pip.ns { background: var(--st-ns-border); opacity: 0.5; }
+.day-completion-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(203, 211, 234, 0.5);
+  font-size: 10px;
+  color: var(--gray-body);
+  flex-wrap: wrap;
+}
+.day-completion-row .label { font-weight: 600; margin-right: 4px; }
+.day-completion-row .pct { margin-left: auto; font-weight: 700; color: var(--navy); }
+
+/* ===== DELIVERY ROUTE (PROGRAM TRACKER) VIEW =====
+   Brand metaphor: the Big Picture compass. Stages flow left-to-right like
+   the 6-step gauge, using Conservice navy as the background and brand blue
+   → brand green for the progression (never orange — that's Prep Work's
+   process color and is reserved for lifecycle content). */
+.route-wrap {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-deep) 60%, #0F1A2E 100%);
+  border-radius: 20px;
+  padding: 0;
+  box-shadow: 0 12px 40px rgba(38, 55, 70, 0.25);
+  border: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 28px;
+  overflow: hidden;
+  position: relative;
+  color: var(--white);
+}
+/* Subtle grid overlay — echoes the eLearning YODA Ecosystem aesthetic */
+.route-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(74,144,217,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(74,144,217,0.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+.route-header {
+  position: relative;
+  padding: 28px 32px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  z-index: 1;
+}
+.route-compass {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(33,114,183,0.28), rgba(33,114,183,0.08));
+  border: 2px solid var(--week1-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  box-shadow: 0 0 24px rgba(33, 114, 183, 0.35);
+  flex-shrink: 0;
+}
+.route-header-text { flex: 1; }
+.route-eyebrow {
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--week1-accent);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.route-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -0.3px;
+}
+.route-sub {
+  font-size: 13px;
+  color: rgba(255,255,255,0.68);
+  margin-top: 4px;
+}
+
+/* Overall metrics band */
+.route-metrics {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+}
+.route-metric {
+  padding: 18px 20px;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  text-align: left;
+}
+.route-metric:last-child { border-right: none; }
+.route-metric-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.route-metric-value {
+  font-family: 'Roboto', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--white);
+  line-height: 1;
+}
+.route-metric-value.cp { color: #A9E065; }
+.route-metric-value.ip { color: #6BB4E8; }
+.route-metric-value.ns { color: rgba(255,255,255,0.65); }
+.route-metric-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 4px;
+}
+
+/* Chevron stages — the "delivery route" itself */
+.route-stages-wrap {
+  position: relative;
+  z-index: 1;
+  padding: 32px 32px 28px;
+}
+.route-stages-heading {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+.route-stages {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  position: relative;
+}
+.route-stage {
+  position: relative;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  padding: 22px 20px 18px 32px;
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 0 100%, 18px 50%);
+  transition: all 0.5s cubic-bezier(.2,.8,.2,1);
+  text-align: left;
+  min-height: 96px;
+}
+.route-stage:first-child {
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 0 100%);
+  padding-left: 22px;
+}
+.route-stage:last-child {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 18px 50%);
+}
+.route-stage.done {
+  background: linear-gradient(135deg, rgba(119,188,31,0.35) 0%, rgba(119,188,31,0.15) 100%);
+  border-color: rgba(119,188,31,0.55);
+  box-shadow: inset 0 0 20px rgba(119,188,31,0.15);
+}
+.route-stage.active {
+  background: linear-gradient(135deg, rgba(33,114,183,0.45) 0%, rgba(33,114,183,0.18) 100%);
+  border-color: var(--week1-accent);
+  box-shadow: inset 0 0 24px rgba(33,114,183,0.30), 0 0 20px rgba(33,114,183,0.35);
+  animation: routeStagePulse 2.6s ease-in-out infinite;
+}
+@keyframes routeStagePulse {
+  0%, 100% { box-shadow: inset 0 0 24px rgba(33,114,183,0.30), 0 0 20px rgba(33,114,183,0.35); }
+  50% { box-shadow: inset 0 0 30px rgba(33,114,183,0.45), 0 0 32px rgba(33,114,183,0.55); }
+}
+.route-stage-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: 1.5px solid rgba(255,255,255,0.25);
+  color: rgba(255,255,255,0.7);
+  font-size: 12px;
+  font-weight: 800;
+  font-family: 'Roboto', sans-serif;
+  margin-bottom: 8px;
+}
+.route-stage.done .route-stage-num {
+  background: #77BC1F;
+  border-color: #94D147;
+  color: white;
+}
+.route-stage.active .route-stage-num {
+  background: var(--week1-border);
+  border-color: var(--week1-accent);
+  color: white;
+  box-shadow: 0 0 12px rgba(74, 157, 224, 0.6);
+}
+.route-stage-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+.route-stage-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.62);
+  line-height: 1.4;
+}
+.route-stage-badge {
+  position: absolute;
+  top: 12px;
+  right: 26px;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #A9E065;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.route-stage.done .route-stage-badge { opacity: 1; }
+.route-stage.active .route-stage-badge { opacity: 1; color: #6BB4E8; }
+
+/* Overall progress rail — clean brand-blue → brand-green sweep */
+.route-progress-wrap {
+  position: relative;
+  z-index: 1;
+  padding: 0 32px 32px;
+}
+.route-progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 11px;
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.route-progress-label .big {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--white);
+  letter-spacing: -0.5px;
+  text-transform: none;
+}
+.route-progress-track {
+  height: 14px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.10);
+  position: relative;
+}
+.route-progress-fill-ip {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  background: linear-gradient(90deg, rgba(33,114,183,0.55), rgba(74,157,224,0.75));
+  transition: width 1s cubic-bezier(.2,.8,.2,1);
+  border-radius: 8px;
+}
+.route-progress-fill-cp {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  background: linear-gradient(90deg, #77BC1F, #94D147);
+  box-shadow: 0 0 12px rgba(119, 188, 31, 0.55);
+  transition: width 1s cubic-bezier(.2,.8,.2,1);
+  border-radius: 8px;
+}
+.route-progress-legend {
+  display: flex;
+  gap: 20px;
+  margin-top: 12px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.6);
+  flex-wrap: wrap;
+}
+.route-progress-legend-item { display: flex; align-items: center; gap: 6px; }
+.route-progress-legend-swatch {
+  width: 12px; height: 12px; border-radius: 3px;
+}
+
+/* Per-day route stops */
+.route-days-heading {
+  padding: 24px 32px 12px;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  font-weight: 700;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.15);
+  position: relative;
+  z-index: 1;
+}
+.route-days-heading .hint {
+  float: right;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  text-transform: none;
+  color: rgba(255,255,255,0.4);
+  font-style: italic;
+}
+.route-days {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
+  padding: 0 32px 32px;
+  background: rgba(0,0,0,0.15);
+}
+.route-day {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-left: 4px solid var(--st-ns-border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+.route-day:hover {
+  background: rgba(255,255,255,0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+.route-day.done { border-left-color: #77BC1F; background: linear-gradient(135deg, rgba(119,188,31,0.10), rgba(255,255,255,0.02)); }
+.route-day.active { border-left-color: var(--week1-accent); background: linear-gradient(135deg, rgba(33,114,183,0.12), rgba(255,255,255,0.02)); }
+.route-day.pending { border-left-color: rgba(255,255,255,0.20); }
+.route-day-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.route-day-head h4 {
+  font-size: 14px;
+  color: var(--white);
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.route-day-pill {
+  font-size: 9px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border: 1px solid;
+}
+.route-day-pill.done { background: rgba(119,188,31,0.20); border-color: rgba(119,188,31,0.55); color: #A9E065; }
+.route-day-pill.active { background: rgba(33,114,183,0.20); border-color: rgba(33,114,183,0.55); color: #6BB4E8; }
+.route-day-pill.pending { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.20); color: rgba(255,255,255,0.55); }
+.route-day-progress {
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  position: relative;
+}
+.route-day-progress-ip {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  background: rgba(33,114,183,0.55);
+  transition: width 0.6s ease;
+}
+.route-day-progress-cp {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  background: linear-gradient(90deg, #77BC1F, #94D147);
+  transition: width 0.6s ease;
+}
+.route-day-meta {
+  font-size: 11px;
+  color: rgba(255,255,255,0.6);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.route-day-meta .pct { font-weight: 800; color: var(--white); font-size: 13px; }
+
+@media (max-width: 720px) {
+  .route-stages { grid-template-columns: repeat(2, 1fr); }
+  .route-stage { clip-path: none !important; padding-left: 22px; }
+  .route-metrics { grid-template-columns: repeat(2, 1fr); }
+  .route-metric:nth-child(2) { border-right: none; }
 }
 
 /* ===== WEEK VIEW ===== */
@@ -642,11 +1140,16 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
 }
 .budget-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #2172B7 0%, #4A9DE0 100%);
-  transition: width 0.5s cubic-bezier(.2,.8,.2,1);
+  background: linear-gradient(90deg, var(--cap-low) 0%, #A5B0CC 100%);
+  transition: width 0.5s cubic-bezier(.2,.8,.2,1), background 0.5s ease;
   border-radius: 6px;
-  box-shadow: 0 0 8px rgba(33, 114, 183, 0.35);
+  box-shadow: 0 0 8px rgba(184, 194, 221, 0.4);
 }
+.budget-bar-fill.cap-cool { background: linear-gradient(90deg, var(--cap-low) 0%, #A5B0CC 100%); box-shadow: 0 0 6px rgba(184, 194, 221, 0.4); }
+.budget-bar-fill.cap-warm { background: linear-gradient(90deg, #FED968 0%, var(--cap-mid) 100%); box-shadow: 0 0 8px rgba(254, 190, 16, 0.45); }
+.budget-bar-fill.cap-hot { background: linear-gradient(90deg, var(--cap-mid) 0%, var(--cap-hot) 100%); box-shadow: 0 0 10px rgba(255, 131, 0, 0.50); }
+.budget-bar-fill.cap-full { background: linear-gradient(90deg, var(--cap-full) 0%, #94D147 100%); box-shadow: 0 0 12px rgba(119, 188, 31, 0.55); }
+.budget-bar-fill.cap-over { background: linear-gradient(90deg, var(--cap-over) 0%, #ED4A4A 100%); box-shadow: 0 0 12px rgba(211, 30, 30, 0.55); }
 .budget-bar-fill.full {
   background: linear-gradient(90deg, var(--good-border) 0%, #4CB88C 100%);
   box-shadow: 0 0 10px rgba(0, 157, 102, 0.4);
@@ -1115,7 +1618,7 @@ body.stakeholder .comments-section { display: block; }
   border-radius: 12px;
   padding: 12px 16px;
   display: grid;
-  grid-template-columns: auto 60px 1fr auto auto auto auto auto;
+  grid-template-columns: auto 60px 1fr auto auto auto auto auto auto;
   gap: 12px;
   align-items: center;
   font-size: 12.5px;
@@ -1212,11 +1715,12 @@ body.stakeholder .compact-row .drag-handle { display: none; }
 .kpi-row .kpi:nth-child(1) { border-left-color: rgba(38, 55, 70, 0.35); }
 .kpi-row .kpi:nth-child(2) { border-left-color: var(--week1-border); }
 .kpi-row .kpi:nth-child(3) { border-left-color: var(--week1-border); }
-.kpi-row .kpi:nth-child(3).good { border-left-color: var(--good-border); }
-.kpi-row .kpi:nth-child(3).warn { border-left-color: var(--draft-border); }
-.kpi-row .kpi:nth-child(4) { border-left-color: var(--draft-border); }
-.kpi.good .kpi-value { color: var(--good-border); }
-.kpi.warn .kpi-value { color: #B85A00; }
+.kpi-row .kpi:nth-child(3).good { border-left-color: var(--st-cp-border); }
+.kpi-row .kpi:nth-child(3).warn { border-left-color: var(--st-ip-border); }
+.kpi-row .kpi:nth-child(4) { border-left-color: var(--st-ip-border); }
+.kpi-row .kpi:nth-child(4).good { border-left-color: var(--st-cp-border); }
+.kpi.good .kpi-value { color: var(--st-cp-text); }
+.kpi.warn .kpi-value { color: var(--st-ip-text); }
 
 /* Toast */
 .toast {
@@ -1246,6 +1750,7 @@ body.stakeholder .compact-row .drag-handle { display: none; }
 
 <nav class="tabs">
   <button class="tab active" data-view="overview" onclick="showView('overview')">Overview</button>
+  <button class="tab" data-view="tracker" onclick="showView('tracker')">🧭 Route</button>
   <button class="tab" data-view="week" onclick="showView('week')">By Week</button>
   <button class="tab" data-view="day" onclick="showView('day')">By Day</button>
   <button class="tab" data-view="all" onclick="showView('all')">All Content</button>
@@ -1256,6 +1761,11 @@ body.stakeholder .compact-row .drag-handle { display: none; }
   <div id="view-overview" class="view active">
     <div class="kpi-row" id="kpiRow"></div>
     <div id="dayGrid"></div>
+  </div>
+
+  <!-- TRACKER -->
+  <div id="view-tracker" class="view">
+    <div id="trackerContent"></div>
   </div>
 
   <!-- WEEK -->
@@ -1348,9 +1858,10 @@ body.stakeholder .compact-row .drag-handle { display: none; }
       </div>
       <div class="form-field">
         <label>Status</label>
-        <select id="f-draft">
-          <option value="0">Ready</option>
-          <option value="1">Draft</option>
+        <select id="f-status">
+          <option value="ns">Not Started</option>
+          <option value="ip">In Progress</option>
+          <option value="cp">Complete</option>
         </select>
       </div>
       <div class="form-field full">
@@ -1598,9 +2109,60 @@ function showView(name) {
   document.getElementById(`view-${name}`).classList.add('active');
   document.querySelector(`.tab[data-view="${name}"]`).classList.add('active');
   if (name === 'overview') renderOverview();
+  if (name === 'tracker') renderTracker();
   if (name === 'week') renderWeek();
   if (name === 'day') renderDay();
   if (name === 'all') renderAll();
+}
+
+// Normalize module status. Legacy field: dr (0=Ready, 1=Draft) → migrate to st (ns/ip/cp).
+// Old "Ready" (dr:0) maps to "Not Started" so nothing is silently marked done.
+function getStatus(m) {
+  if (m.st === 'ns' || m.st === 'ip' || m.st === 'cp') return m.st;
+  if (m.dr === 1) return 'ip';   // old drafts are In Progress
+  return 'ns';                    // everything else = Not Started until confirmed
+}
+function statusLabel(st) {
+  return st === 'cp' ? 'Complete' : st === 'ip' ? 'In Progress' : 'Not Started';
+}
+function statusPill(st) {
+  return `<span class="status-pill ${st}"><span class="dot"></span>${statusLabel(st)}</span>`;
+}
+// Clickable version — cycles ns → ip → cp → ns on click. Used in All Content list.
+function statusPillClickable(m) {
+  const st = getStatus(m);
+  return `<span class="status-pill ${st} clickable" onclick="event.stopPropagation(); cycleStatus('${esc(m.id)}')" title="Click to advance status">
+    <span class="dot"></span>${statusLabel(st)}
+  </span>`;
+}
+function cycleStatus(id) {
+  const mod = modules.find(m => m.id === id);
+  if (!mod) return;
+  const current = getStatus(mod);
+  const next = current === 'ns' ? 'ip' : current === 'ip' ? 'cp' : 'ns';
+  // Determine whether it's a user-added module or scaffold
+  const isUserAdded = overlays.added.some(m => m.id === id);
+  if (isUserAdded) {
+    const idx = overlays.added.findIndex(m => m.id === id);
+    overlays.added[idx].st = next;
+    delete overlays.added[idx].dr;
+  } else {
+    overlays.edits[id] = { ...(overlays.edits[id] || {}), st: next };
+  }
+  saveOverlays();
+  rebuildModules();
+  const currentView = document.querySelector('.view.active').id.replace('view-', '');
+  showView(currentView);
+  showToast(`Status → ${statusLabel(next)}`);
+}
+
+// Capacity class based on fill % — drives the day-card bar heat-map
+function capacityClass(pct) {
+  if (pct > 100) return 'cap-over';
+  if (pct >= 99.5) return 'cap-full';
+  if (pct >= 75) return 'cap-hot';
+  if (pct >= 50) return 'cap-warm';
+  return 'cap-cool';
 }
 
 function dayStatus(scheduled, budget) {
@@ -1615,16 +2177,23 @@ function esc(s) {
 
 function renderOverview() {
   const days = [3,4,5,6,7,8,9,10];
-  let totalSched = 0, totalDraft = 0, totalMods = modules.length;
+  let totalSched = 0, totalMods = modules.length;
+  let countNS = 0, countIP = 0, countCP = 0;
 
+  modules.forEach(m => {
+    const st = getStatus(m);
+    if (st === 'cp') countCP++;
+    else if (st === 'ip') countIP++;
+    else countNS++;
+  });
   days.forEach(d => {
     const dayMods = modules.filter(m => m.d === d);
     totalSched += dayMods.reduce((s, m) => s + (m.m || 0), 0);
-    totalDraft += dayMods.filter(m => m.dr).length;
   });
 
   const totalBudget = days.length * DAY_BUDGET;
   const fillPct = ((totalSched / totalBudget) * 100).toFixed(1);
+  const completePct = totalMods ? ((countCP / totalMods) * 100).toFixed(0) : 0;
 
   document.getElementById('kpiRow').innerHTML = `
     <div class="kpi">
@@ -1642,10 +2211,10 @@ function renderOverview() {
       <div class="kpi-value">${fillPct}%</div>
       <div class="kpi-sub">across all 8 days</div>
     </div>
-    <div class="kpi warn">
-      <div class="kpi-label">Draft Modules</div>
-      <div class="kpi-value">${totalDraft}</div>
-      <div class="kpi-sub">need SME review</div>
+    <div class="kpi ${completePct >= 50 ? 'good' : 'warn'}">
+      <div class="kpi-label">Complete</div>
+      <div class="kpi-value">${completePct}%</div>
+      <div class="kpi-sub">${countCP} done · ${countIP} in progress · ${countNS} not started</div>
     </div>
   `;
 
@@ -1674,26 +2243,48 @@ function renderOverview() {
 function renderDayCard(d) {
   const dayMods = modules.filter(m => m.d === d);
   const sched = dayMods.reduce((s, m) => s + (m.m || 0), 0);
-  const draftCount = dayMods.filter(m => m.dr).length;
   const status = dayStatus(sched, DAY_BUDGET);
-  const pct = Math.min(100, (sched / DAY_BUDGET) * 100);
+  const pct = (sched / DAY_BUDGET) * 100;
+  const displayPct = Math.min(100, pct);
+  const capClass = capacityClass(pct);
   const weekClass = d <= 5 ? 'week-1' : 'week-2';
   const weekLabel = d <= 5 ? 'W1' : 'W2';
-  const barClass = status === 'over' ? 'over' : (status === 'full' ? 'full' : '');
+
+  // status counts for the completion strip
+  const stCounts = { ns: 0, ip: 0, cp: 0 };
+  dayMods.forEach(m => { stCounts[getStatus(m)]++; });
+  const completePct = dayMods.length ? Math.round((stCounts.cp / dayMods.length) * 100) : 0;
+
+  // capacity icon: green check at 100%, red ! when over
+  let capIcon = '';
+  if (pct > 100) capIcon = '<span class="cap-icon over" title="Over budget">!</span>';
+  else if (pct >= 99.5) capIcon = '<span class="cap-icon" title="Day is at capacity">✓</span>';
+
+  // completion pips — one dot per module, colored by status
+  const pips = dayMods.map(m => {
+    const st = getStatus(m);
+    return `<span class="day-card-completion-pip ${st}" title="${esc(m.n)}: ${statusLabel(st)}"></span>`;
+  }).join('');
+
   return `
     <div class="day-card ${weekClass}" onclick="goToDay(${d})">
       <div class="day-card-header">
-        <h3>Day ${d}<span class="week-badge">${weekLabel}</span></h3>
+        <h3>Day ${d}<span class="week-badge">${weekLabel}</span>${capIcon}</h3>
         <span class="day-status ${status}">${status.toUpperCase()}</span>
       </div>
       <div class="day-card-bar">
-        <div class="day-card-bar-fill ${barClass}" style="width:${pct}%"></div>
+        <div class="day-card-bar-fill ${capClass}" style="width:${displayPct}%"></div>
       </div>
       <div class="day-card-meta">
         <span><strong>${sched}</strong> / ${DAY_BUDGET} min</span>
         <span>${dayMods.length} modules</span>
       </div>
-      ${draftCount > 0 ? `<div class="draft-pill">${draftCount} draft</div>` : ''}
+      ${dayMods.length ? `
+      <div class="day-completion-row">
+        <span class="label">Progress:</span>
+        ${pips}
+        <span class="pct">${completePct}%</span>
+      </div>` : ''}
     </div>
   `;
 }
@@ -1723,18 +2314,22 @@ function renderWeek() {
             const dayMods = modules.filter(m => m.d === d);
             const sched = dayMods.reduce((s, m) => s + (m.m || 0), 0);
             const status = dayStatus(sched, DAY_BUDGET);
-            const pct = Math.min(100, (sched / DAY_BUDGET) * 100);
+            const pct = (sched / DAY_BUDGET) * 100;
+            const displayPct = Math.min(100, pct);
+            const capClass = capacityClass(pct);
             const weekClass = d <= 5 ? 'week-1' : 'week-2';
             const weekLabel = d <= 5 ? 'W1' : 'W2';
-            const barClass = status === 'over' ? 'over' : (status === 'full' ? 'full' : '');
+            let capIcon = '';
+            if (pct > 100) capIcon = '<span class="cap-icon over" title="Over budget">!</span>';
+            else if (pct >= 99.5) capIcon = '<span class="cap-icon" title="At capacity">✓</span>';
             return `
               <div class="day-card ${weekClass}" onclick="goToDay(${d})">
                 <div class="day-card-header">
-                  <h3>Day ${d}<span class="week-badge">${weekLabel}</span></h3>
+                  <h3>Day ${d}<span class="week-badge">${weekLabel}</span>${capIcon}</h3>
                   <span class="day-status ${status}">${status.toUpperCase()}</span>
                 </div>
                 <div class="day-card-bar">
-                  <div class="day-card-bar-fill ${barClass}" style="width:${pct}%"></div>
+                  <div class="day-card-bar-fill ${capClass}" style="width:${displayPct}%"></div>
                 </div>
                 <div class="day-card-meta">
                   <span><strong>${sched}</strong> / ${DAY_BUDGET} min</span>
@@ -1754,13 +2349,187 @@ function goToDay(d) {
   showView('day');
 }
 
+// ===== DELIVERY ROUTE (Program Tracker) =====
+// Stages: Scoped → In Development → In Review → Delivery-Ready.
+// A stage is "done" when the whole program has moved past it. A stage is
+// "active" when meaningful work is happening at that phase right now.
+//
+// Logic:
+// - Stage 0 (Scoped)      : done as soon as anything moves past NS.
+//                            active only when everything is still NS.
+// - Stage 1 (In Development): active when >0 modules are IP and completion < 50%.
+//                             done when completion >= 50%.
+// - Stage 2 (In Review)   : active when 50% <= completion < 100%.
+//                            done when completion = 100%.
+// - Stage 3 (Delivery)    : active/done when completion = 100%.
+function renderTracker() {
+  const total = modules.length;
+  let countNS = 0, countIP = 0, countCP = 0;
+  modules.forEach(m => {
+    const st = getStatus(m);
+    if (st === 'cp') countCP++;
+    else if (st === 'ip') countIP++;
+    else countNS++;
+  });
+  const started = countIP + countCP;
+  const completePct = total ? (countCP / total) * 100 : 0;
+  const ipPct = total ? (countIP / total) * 100 : 0;
+  const inMotionPct = total ? (started / total) * 100 : 0;
+
+  const stages = [
+    { key: 'scoped',  label: 'Scoped',        sub: 'Outlines & scope locked' },
+    { key: 'build',   label: 'In Development', sub: 'Content being built' },
+    { key: 'review',  label: 'In Review',      sub: 'SME & stakeholder checks' },
+    { key: 'ready',   label: 'Delivery-Ready', sub: 'On the floor' },
+  ];
+
+  // Determine done/active for each stage based on actual work state
+  const stageState = stages.map((s, i) => {
+    let state = ''; // '', 'active', or 'done'
+    if (i === 0) {
+      if (started > 0) state = 'done';
+      else if (total > 0) state = 'active';
+    } else if (i === 1) {
+      if (completePct >= 50) state = 'done';
+      else if (countIP > 0 || started > 0) state = 'active';
+    } else if (i === 2) {
+      if (completePct >= 100) state = 'done';
+      else if (completePct >= 50 || (countCP > 0 && countIP > 0)) state = 'active';
+    } else if (i === 3) {
+      if (completePct >= 100) state = 'done';
+      else if (completePct >= 90) state = 'active';
+    }
+    return state;
+  });
+
+  const stageHtml = stages.map((s, i) => {
+    const state = stageState[i];
+    const badge = state === 'done' ? 'COMPLETE' : state === 'active' ? 'IN MOTION' : '';
+    return `
+      <div class="route-stage ${state}">
+        <div class="route-stage-num">${state === 'done' ? '✓' : (i + 1)}</div>
+        <div class="route-stage-label">${s.label}</div>
+        <div class="route-stage-sub">${s.sub}</div>
+        <div class="route-stage-badge">${badge}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Per-day route stops
+  const days = [3,4,5,6,7,8,9,10];
+  const dayHtml = days.map(d => {
+    const dayMods = modules.filter(m => m.d === d);
+    if (!dayMods.length) return '';
+    let cp = 0, ip = 0;
+    dayMods.forEach(m => {
+      const st = getStatus(m);
+      if (st === 'cp') cp++;
+      else if (st === 'ip') ip++;
+    });
+    const cpPct = Math.round((cp / dayMods.length) * 100);
+    const ipPctDay = Math.round(((ip + cp) / dayMods.length) * 100);
+    let dayCls = 'pending', pillLabel = 'Pending';
+    if (cpPct === 100) { dayCls = 'done'; pillLabel = 'Ready'; }
+    else if (ip > 0 || cp > 0) { dayCls = 'active'; pillLabel = 'Building'; }
+    return `
+      <div class="route-day ${dayCls}" onclick="goToDay(${d})">
+        <div class="route-day-head">
+          <h4>Day ${d}</h4>
+          <span class="route-day-pill ${dayCls}">${pillLabel}</span>
+        </div>
+        <div class="route-day-progress">
+          <div class="route-day-progress-ip" style="width:${ipPctDay}%"></div>
+          <div class="route-day-progress-cp" style="width:${cpPct}%"></div>
+        </div>
+        <div class="route-day-meta">
+          <span>${cp}/${dayMods.length} ready · ${ip} building</span>
+          <span class="pct">${cpPct}%</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const statusLine =
+    completePct >= 100 ? 'Every module is delivery-ready.' :
+    completePct >= 50  ? 'Past the halfway mark. Review phase in motion.' :
+    completePct >= 25  ? 'Build phase in full swing.' :
+    started > 0        ? 'Development is underway across the program.' :
+                         'Scoping complete. Development pending.';
+
+  document.getElementById('trackerContent').innerHTML = `
+    <div class="route-wrap">
+      <div class="route-header">
+        <div class="route-compass">🧭</div>
+        <div class="route-header-text">
+          <div class="route-eyebrow">Program Delivery</div>
+          <div class="route-title">The Route to the Floor</div>
+          <div class="route-sub">${statusLine}</div>
+        </div>
+      </div>
+
+      <div class="route-metrics">
+        <div class="route-metric">
+          <div class="route-metric-label">Total Modules</div>
+          <div class="route-metric-value">${total}</div>
+          <div class="route-metric-sub">Days 3 – 10</div>
+        </div>
+        <div class="route-metric">
+          <div class="route-metric-label">Delivery-Ready</div>
+          <div class="route-metric-value cp">${countCP}</div>
+          <div class="route-metric-sub">${completePct.toFixed(0)}% of program</div>
+        </div>
+        <div class="route-metric">
+          <div class="route-metric-label">In Development</div>
+          <div class="route-metric-value ip">${countIP}</div>
+          <div class="route-metric-sub">${ipPct.toFixed(0)}% of program</div>
+        </div>
+        <div class="route-metric">
+          <div class="route-metric-label">Not Started</div>
+          <div class="route-metric-value ns">${countNS}</div>
+          <div class="route-metric-sub">Awaiting kickoff</div>
+        </div>
+      </div>
+
+      <div class="route-stages-wrap">
+        <div class="route-stages-heading">Program Phase</div>
+        <div class="route-stages">
+          ${stageHtml}
+        </div>
+      </div>
+
+      <div class="route-progress-wrap">
+        <div class="route-progress-label">
+          <span>Overall Completion</span>
+          <span class="big">${completePct.toFixed(0)}%</span>
+        </div>
+        <div class="route-progress-track">
+          <div class="route-progress-fill-ip" style="width:${inMotionPct}%"></div>
+          <div class="route-progress-fill-cp" style="width:${completePct}%"></div>
+        </div>
+        <div class="route-progress-legend">
+          <div class="route-progress-legend-item"><span class="route-progress-legend-swatch" style="background:linear-gradient(90deg,#77BC1F,#94D147);"></span> Delivery-Ready</div>
+          <div class="route-progress-legend-item"><span class="route-progress-legend-swatch" style="background:rgba(33,114,183,0.55);"></span> In Development</div>
+          <div class="route-progress-legend-item"><span class="route-progress-legend-swatch" style="background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.25);"></span> Not Started</div>
+        </div>
+      </div>
+
+      <div class="route-days-heading">
+        Route Stops · By Day
+        <span class="hint">Click any day to inspect its modules</span>
+      </div>
+      <div class="route-days">${dayHtml}</div>
+    </div>
+  `;
+}
+
 function renderDay() {
   const d = parseInt(document.getElementById('daySelect').value);
   const dayMods = orderedForDay(d);
   const sched = dayMods.reduce((s, m) => s + (m.m || 0), 0);
   const remaining = DAY_BUDGET - sched;
-  const pct = Math.min(100, (sched / DAY_BUDGET) * 100);
-  const status = dayStatus(sched, DAY_BUDGET);
+  const pct = (sched / DAY_BUDGET) * 100;
+  const displayPct = Math.min(100, pct);
+  const capClass = capacityClass(pct);
 
   const otjMods = dayMods.filter(m => (m.c || '').toLowerCase() === 'otj');
   const otjMins = otjMods.reduce((s, m) => s + (m.m || 0), 0);
@@ -1773,7 +2542,7 @@ function renderDay() {
         <span>Remaining: <strong style="color:${remaining < 0 ? 'var(--warn-text)' : 'var(--navy)'}">${remaining}</strong> min</span>
       </div>
       <div class="budget-bar">
-        <div class="budget-bar-fill ${status === 'over' ? 'over' : (status === 'full' ? 'full' : '')}" style="width:${pct}%"></div>
+        <div class="budget-bar-fill ${capClass}" style="width:${displayPct}%"></div>
       </div>
       ${otjMins > 0 ? `<div class="otj-note"><strong>OTJ time:</strong> ${otjMins} min — counts toward day total</div>` : ''}
     </div>
@@ -1782,15 +2551,16 @@ function renderDay() {
 
   dayMods.forEach(m => {
     const comments = overlays.comments[m.id] || [];
+    const st = getStatus(m);
     html += `
-      <div class="module-card ${m.dr ? 'draft' : ''}" data-id="${esc(m.id)}" draggable="true">
+      <div class="module-card st-${st}" data-id="${esc(m.id)}" draggable="true">
         <div class="module-card-header">
           <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:240px;">
             <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
             <div class="module-title">${esc(m.n)}</div>
           </div>
           <div class="module-meta">
-            ${m.dr ? '<span class="draft-pill">⚠️ DRAFT</span>' : ''}
+            ${statusPillClickable(m)}
             <span class="ct-pill">${esc(m.c) || '—'}</span>
             <span class="mins-pill">${m.m} min</span>
             <div class="module-controls">
@@ -1898,11 +2668,13 @@ function renderAll() {
 
   const html = list.map(m => {
     const comments = overlays.comments[m.id] || [];
+    const st = getStatus(m);
     return `
-      <div class="compact-row ${m.dr ? 'draft' : ''}" data-id="${esc(m.id)}" draggable="true">
+      <div class="compact-row st-${st}" data-id="${esc(m.id)}" draggable="true">
         <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
         <span class="cr-day">Day ${m.d}</span>
-        <span class="cr-title" title="${esc(m.n)}">${esc(m.n)}${m.dr ? ' <span style="color:var(--draft-text);font-weight:700;">·DRAFT</span>' : ''}</span>
+        <span class="cr-title" title="${esc(m.n)}">${esc(m.n)}</span>
+        ${statusPillClickable(m)}
         <span class="cr-ct">${esc(m.c) || '—'}</span>
         <span class="cr-mins">${m.m || 0}m</span>
         <span class="cr-comments-count" title="${comments.length} comment${comments.length===1?'':'s'}">${comments.length ? '💬' + comments.length : ''}</span>
@@ -1975,7 +2747,7 @@ function openAddModal() {
   document.getElementById('f-mins').value = 30;
   document.getElementById('f-day').value = '3';
   document.getElementById('f-ct').value = 'ILT';
-  document.getElementById('f-draft').value = '0';
+  document.getElementById('f-status').value = 'ns';
   document.getElementById('modalBackdrop').classList.add('show');
   setTimeout(() => document.getElementById('f-name').focus(), 50);
 }
@@ -1992,7 +2764,7 @@ function openEditModal(id) {
   document.getElementById('f-day').value = mod.d || 3;
   document.getElementById('f-mins').value = mod.m || 0;
   document.getElementById('f-ct').value = mod.c || 'ILT';
-  document.getElementById('f-draft').value = mod.dr ? '1' : '0';
+  document.getElementById('f-status').value = getStatus(mod);
   document.getElementById('f-link').value = mod.link || '';
   document.getElementById('f-outcome').value = mod.o || '';
   document.getElementById('f-decisions').value = mod.dec || '';
@@ -2018,7 +2790,7 @@ function collectForm() {
     d: parseInt(document.getElementById('f-day').value),
     m: parseInt(document.getElementById('f-mins').value) || 0,
     c: document.getElementById('f-ct').value,
-    dr: document.getElementById('f-draft').value === '1' ? 1 : 0,
+    st: document.getElementById('f-status').value,
     link: document.getElementById('f-link').value.trim(),
     o: document.getElementById('f-outcome').value.trim(),
     dec: document.getElementById('f-decisions').value.trim(),
