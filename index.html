@@ -63,18 +63,24 @@
   --shadow-lg: 0 8px 24px rgba(38,55,70,0.12);
 
   /* Module status */
-  --st-ns-bg: #E4E8F0;
-  --st-ns-border: #7A8698;
-  --st-ns-text: #3A4553;
-  --st-ip-bg: #D6E7F5;
-  --st-ip-border: #2172B7;
-  --st-ip-text: #144876;
+  --st-ns-bg: #EDEEF1;
+  --st-ns-border: #9BA3AE;
+  --st-ns-text: #4A5361;
+  --st-ip-bg: #B8D5EF;
+  --st-ip-border: #1D6BAE;
+  --st-ip-text: #0D3A63;
   --st-rv-bg: #FFF2CC;
   --st-rv-border: #F0B429;
   --st-rv-text: #6B4A00;
   --st-cp-bg: #DDF0C4;
   --st-cp-border: #77BC1F;
   --st-cp-text: #3F6B0F;
+  --st-oh-bg: #F0E5D0;
+  --st-oh-border: #9B7B3A;
+  --st-oh-text: #4E3A0D;
+  --st-cn-bg: #EED7D7;
+  --st-cn-border: #9E4A4A;
+  --st-cn-text: #582020;
 
   /* Capacity heat-map */
   --cap-low: #B8C2DD;
@@ -582,6 +588,8 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
 .status-pill.ip { background: var(--st-ip-bg); color: var(--st-ip-text); border-color: var(--st-ip-border); }
 .status-pill.rv { background: var(--st-rv-bg); color: var(--st-rv-text); border-color: var(--st-rv-border); }
 .status-pill.cp { background: var(--st-cp-bg); color: var(--st-cp-text); border-color: var(--st-cp-border); }
+.status-pill.oh { background: var(--st-oh-bg); color: var(--st-oh-text); border-color: var(--st-oh-border); }
+.status-pill.cn { background: var(--st-cn-bg); color: var(--st-cn-text); border-color: var(--st-cn-border); text-decoration: line-through; text-decoration-color: rgba(88,32,32,0.55); text-decoration-thickness: 1.5px; }
 .status-pill.clickable {
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
@@ -601,10 +609,16 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
 .module-card.st-rv { border-left-color: var(--st-rv-border); background: linear-gradient(90deg, rgba(240,180,41,0.06) 0%, rgba(255,255,255,0) 40%); }
 .module-card.st-ip { border-left-color: var(--st-ip-border); }
 .module-card.st-ns { border-left-color: var(--st-ns-border); opacity: 0.92; }
+.module-card.st-oh { border-left-color: var(--st-oh-border); background: linear-gradient(90deg, rgba(155,123,58,0.05) 0%, rgba(255,255,255,0) 40%); }
+.module-card.st-cn { border-left-color: var(--st-cn-border); opacity: 0.72; }
+.module-card.st-cn .module-title { text-decoration: line-through; text-decoration-color: rgba(158,74,74,0.55); }
 .compact-row.st-cp { border-left-color: var(--st-cp-border); }
 .compact-row.st-rv { border-left-color: var(--st-rv-border); }
 .compact-row.st-ip { border-left-color: var(--st-ip-border); }
 .compact-row.st-ns { border-left-color: var(--st-ns-border); }
+.compact-row.st-oh { border-left-color: var(--st-oh-border); }
+.compact-row.st-cn { border-left-color: var(--st-cn-border); opacity: 0.75; }
+.compact-row.st-cn .cr-title { text-decoration: line-through; text-decoration-color: rgba(158,74,74,0.55); }
 .day-card-completion-pip {
   display: inline-block;
   width: 6px; height: 6px;
@@ -615,6 +629,8 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
 .day-card-completion-pip.rv { background: var(--st-rv-border); }
 .day-card-completion-pip.ip { background: var(--st-ip-border); }
 .day-card-completion-pip.ns { background: var(--st-ns-border); opacity: 0.5; }
+.day-card-completion-pip.oh { background: var(--st-oh-border); }
+.day-card-completion-pip.cn { background: var(--st-cn-border); opacity: 0.55; }
 .day-completion-row {
   display: flex;
   align-items: center;
@@ -1030,6 +1046,8 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
 .route-day-mod.st-rv { border-left: 3px solid #F0B429; }
 .route-day-mod.st-ip { border-left: 3px solid #2172B7; }
 .route-day-mod.st-ns { border-left: 3px solid rgba(255,255,255,0.20); }
+.route-day-mod.st-oh { border-left: 3px solid #B8934A; }
+.route-day-mod.st-cn { border-left: 3px solid #B36565; opacity: 0.72; }
 .rdm-title {
   color: rgba(255,255,255,0.92);
   white-space: nowrap;
@@ -1055,6 +1073,8 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
 .rdm-status.st-rv { background: rgba(240,180,41,0.22); color: #F5CE5A; }
 .rdm-status.st-ip { background: rgba(33,114,183,0.22); color: #6BB4E8; }
 .rdm-status.st-ns { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.60); }
+.rdm-status.st-oh { background: rgba(184,147,74,0.22); color: #E0BF7B; }
+.rdm-status.st-cn { background: rgba(179,101,101,0.22); color: #E8A6A6; text-decoration: line-through; text-decoration-thickness: 1px; }
 .rdm-mins {
   font-size: 10px;
   color: rgba(255,255,255,0.55);
@@ -1185,6 +1205,15 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
   border-left-color: rgba(255,255,255,0.25);
   background: rgba(255,255,255,0.03);
 }
+.handoff-row.locked {
+  border-left-color: rgba(255,255,255,0.28);
+  background: rgba(255,255,255,0.025);
+  opacity: 0.72;
+  filter: grayscale(0.75);
+}
+.handoff-row.locked:hover { opacity: 0.92; filter: grayscale(0.4); }
+.handoff-row.locked .hr-days { color: rgba(255,255,255,0.75); }
+.handoff-row.locked .hr-days-label { color: rgba(255,255,255,0.55); }
 
 .hr-icon {
   width: 40px; height: 40px;
@@ -1204,6 +1233,11 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
   background: rgba(255,255,255,0.04);
   border-color: rgba(255,255,255,0.15);
   color: rgba(255,255,255,0.55);
+}
+.handoff-row.locked .hr-icon {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.22);
+  color: rgba(255,255,255,0.75);
 }
 
 .hr-main { min-width: 0; }
@@ -1485,6 +1519,8 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
   text-decoration-color: rgba(196,24,24,0.55);
 }
 .review-calendar.no-date .rcal-day { color: #8FA4BC; }
+.review-calendar.locked .rcal-day { color: #5A6272; }
+.review-calendar.locked .rcal-page { background: linear-gradient(180deg, #F5F6F8 0%, #E8EAEE 100%); }
 .rcal-dow {
   font-family: 'Rajdhani', 'Roboto', sans-serif;
   font-size: 11px;
@@ -1513,6 +1549,7 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
 .review-calendar.rc-sm .rcal-chip { font-size: 8.5px; padding: 4px 4px; letter-spacing: 1.1px; }
 .review-calendar.overdue .rcal-chip { background: #8A0F0F; color: #FFF; }
 .review-calendar.no-date .rcal-chip { background: #7A8698; color: #FFF; }
+.review-calendar.locked .rcal-chip { background: #5A6272; color: #FFF; }
 .rcal-curl {
   position: absolute;
   top: 0;
@@ -1578,6 +1615,7 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
 .review-badge.rb-overdue { background: #FFD6CC; border-color: #FD5F46; color: #A8302F; }
 .review-badge.rb-soon    { background: #FFE8CC; border-color: #FF8300; color: #7A3F00; }
 .review-badge.rb-scheduled { background: #E4E8F0; border-color: #7A8698; color: #3A4553; }
+.review-badge.rb-locked  { background: #E8EAEE; border-color: #9BA3AE; color: #5A6272; }
 .review-badge.rb-done    { background: #DDF0C4; border-color: #77BC1F; color: #3F6B0F; }
 
 /* ================================================================
@@ -1765,6 +1803,14 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
   background: linear-gradient(90deg, rgba(253,95,70,0.12), rgba(255,180,161,0.22) 40%, rgba(253,95,70,0.12) 100%);
   border-color: rgba(253,95,70,0.75);
 }
+.review-countdown.locked {
+  background: linear-gradient(90deg, rgba(155,163,174,0.10), rgba(200,205,213,0.20) 40%, rgba(155,163,174,0.10) 100%);
+  border-color: rgba(155,163,174,0.70);
+  filter: grayscale(0.5);
+}
+.review-countdown.locked::before { display: none; }
+.review-countdown.locked .rc-headline { color: #4A5361; }
+.review-countdown.locked .rc-eye { animation: none; filter: none; }
 .rc-glass {
   display: flex;
   align-items: center;
@@ -3205,7 +3251,7 @@ body.stakeholder .compact-row .drag-handle { display: none; }
 <nav class="tabs">
   <button class="tab active" data-view="overview" onclick="showView('overview')">Overview</button>
   <button class="tab" data-view="tracker" onclick="showView('tracker')">🧭 Training Program Roadmap</button>
-  <button class="tab" data-view="day" onclick="showView('day')">By Day</button>
+  <button class="tab" data-view="day" onclick="showView('day')">Detailed by Day</button>
   <button class="tab" data-view="all" onclick="showView('all')">All Content</button>
 </nav>
 
@@ -3342,6 +3388,8 @@ body.stakeholder .compact-row .drag-handle { display: none; }
           <option value="ip">In Development</option>
           <option value="rv">In Review</option>
           <option value="cp">Complete</option>
+          <option value="oh">On Hold</option>
+          <option value="cn">Cancelled</option>
         </select>
       </div>
       <div class="form-field">
@@ -3610,13 +3658,13 @@ function showView(v) {
 
 // ===== STATUS =====
 function getStatus(m) {
-  if (m.st && ['ns','ip','rv','cp'].includes(m.st)) return m.st;
+  if (m.st && ['ns','ip','rv','cp','oh','cn'].includes(m.st)) return m.st;
   if (m.dr === 0) return 'cp';
   if (m.dr === 1) return 'ns';
   return 'ns';
 }
 function statusLabel(s) {
-  return {ns:'Not Started', ip:'In Development', rv:'In Review', cp:'Complete'}[s] || s;
+  return {ns:'Not Started', ip:'In Development', rv:'In Review', cp:'Complete', oh:'On Hold', cn:'Cancelled'}[s] || s;
 }
 function stageKey(m) {
   if (m.stage) return m.stage;
@@ -3652,11 +3700,11 @@ function statusPillClickable(m) {
   return `<span class="status-pill ${s} clickable" title="Click to cycle status" onclick="event.stopPropagation(); cycleStatus('${m.id}')"><span class="dot"></span>${statusLabel(s)}</span>`;
 }
 function cycleStatus(id) {
-  const cycle = {ns:'ip', ip:'rv', rv:'cp', cp:'ns'};
+  const cycle = {ns:'ip', ip:'rv', rv:'cp', cp:'ns', oh:'ip', cn:'ns'};
   const m = modules.find(x => x.id === id);
   if (!m) return;
   const cur = getStatus(m);
-  const next = cycle[cur];
+  const next = cycle[cur] || 'ns';
   overlays.edits[id] = overlays.edits[id] || {};
   overlays.edits[id].st = next;
   // When flipping to In Review, stamp today's date as "sent" so the review
@@ -3699,7 +3747,7 @@ function renderOverview() {
   const total = modules.length;
   const totalMins = modules.reduce((s, m) => s + m.m, 0);
   const totalHours = (totalMins / 60).toFixed(1);
-  const statusCounts = {ns:0, ip:0, rv:0, cp:0};
+  const statusCounts = {ns:0, ip:0, rv:0, cp:0, oh:0, cn:0};
   modules.forEach(m => statusCounts[getStatus(m)]++);
   const cpPct = total ? Math.round((statusCounts.cp / total) * 100) : 0;
   const ipRv = statusCounts.ip + statusCounts.rv;
@@ -3766,7 +3814,7 @@ function renderDayCard(day) {
   const ds = dayStatus(mins);
   const capCls = capacityClass(mins);
   const week = day <= 5 ? 1 : 2;
-  const counts = {ns:0, ip:0, rv:0, cp:0};
+  const counts = {ns:0, ip:0, rv:0, cp:0, oh:0, cn:0};
   dayMods.forEach(m => counts[getStatus(m)]++);
   const totalCount = dayMods.length;
   const cpCount = counts.cp;
@@ -3864,7 +3912,7 @@ function renderTracker() {
   const perDay = days.map(d => {
     const dayMods = modules.filter(m => m.d === d);
     const total = dayMods.length || 1;
-    const counts = {ns:0, ip:0, rv:0, cp:0};
+    const counts = {ns:0, ip:0, rv:0, cp:0, oh:0, cn:0};
     dayMods.forEach(m => counts[getStatus(m)]++);
     const cpPct = (counts.cp / total) * 100;
     const ipRvPct = ((counts.ip + counts.rv) / total) * 100;
@@ -3875,7 +3923,7 @@ function renderTracker() {
   });
 
   const totalMods = modules.length;
-  const overallCounts = {ns:0, ip:0, rv:0, cp:0};
+  const overallCounts = {ns:0, ip:0, rv:0, cp:0, oh:0, cn:0};
   modules.forEach(m => overallCounts[getStatus(m)]++);
   const overallCpPct = totalMods ? (overallCounts.cp / totalMods) * 100 : 0;
   const overallIpRvPct = totalMods ? ((overallCounts.ip + overallCounts.rv) / totalMods) * 100 : 0;
@@ -3976,7 +4024,8 @@ function renderTracker() {
   const handoffRows = reviewMods.map(({m, info}) => {
     const isOverdue = info.delta !== null && info.delta < 0;
     const isNoDate  = info.delta === null;
-    const cls = isOverdue ? 'overdue' : (isNoDate ? 'no-date' : '');
+    const isLocked  = info.delta === 0;
+    const cls = isOverdue ? 'overdue' : (isNoDate ? 'no-date' : (isLocked ? 'locked' : ''));
     let daysBig, daysLabel, daysLabelCls = '';
     if (isNoDate) {
       daysBig = '—';
@@ -3985,14 +4034,14 @@ function renderTracker() {
       daysBig = Math.abs(info.delta);
       daysLabel = `day${Math.abs(info.delta) === 1 ? '' : 's'} overdue`;
       daysLabelCls = 'overdue';
-    } else if (info.delta === 0) {
+    } else if (isLocked) {
       daysBig = 0;
-      daysLabel = 'due today';
+      daysLabel = 'closes today';
     } else {
       daysBig = info.delta;
       daysLabel = `day${info.delta === 1 ? '' : 's'} left`;
     }
-    const icon = isOverdue ? '⚠' : (isNoDate ? '?' : '🚀');
+    const icon = isOverdue ? '⚠' : (isNoDate ? '?' : (isLocked ? '🔒' : '🚀'));
     let trackHtml;
     if (isNoDate) {
       trackHtml = `<div class="hr-track"><div class="hr-track-empty">No sent or due date on record</div></div>`;
@@ -4176,10 +4225,6 @@ function renderDay() {
         ${(m.a1 || m.a2 || m.a3) ? `<div class="module-field"><strong>Artifacts</strong><div class="field-content">${[m.a1,m.a2,m.a3].filter(Boolean).map(esc).join(' · ')}</div></div>` : ''}
       </div>
       ${m.nt ? `<div class="module-field" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border-soft);"><strong>Notes</strong><div class="field-content">${esc(m.nt)}</div></div>` : ''}
-      <div class="module-notes">
-        <div class="notes-label">Working Notes <span class="notes-status" id="notes-status-${m.id}">Saved ✓</span></div>
-        <textarea placeholder="Add your working notes..." oninput="saveNote('${m.id}', this.value)" onblur="showSaved('${m.id}')">${esc((overlays.edits[m.id] && overlays.edits[m.id].wn) || '')}</textarea>
-      </div>
       <div class="comments-section">
         <div class="comments-header"><span>Comments</span><span style="font-weight:400;color:var(--gray-body);font-size:10px;">${(overlays.comments[m.id]||[]).length} total</span></div>
         <div class="comment-list" id="comments-${m.id}">${(overlays.comments[m.id]||[]).map((c,i) => renderComment(m.id, c, i)).join('')}</div>
@@ -4383,7 +4428,8 @@ function reviewBadge(m) {
   if (!info.due) return '<span class="review-badge rb-scheduled">no date</span>';
   if (info.delta === null) return '';
   if (info.delta < 0) return `<span class="review-badge rb-overdue">${Math.abs(info.delta)}d overdue</span>`;
-  if (info.delta <= 1) return `<span class="review-badge rb-soon">due ${info.delta === 0 ? 'today' : 'tmrw'}</span>`;
+  if (info.delta === 0) return `<span class="review-badge rb-locked">🔒 closes today</span>`;
+  if (info.delta === 1) return `<span class="review-badge rb-soon">due tmrw</span>`;
   if (info.delta <= 3) return `<span class="review-badge rb-soon">${info.delta}d left</span>`;
   return `<span class="review-badge rb-scheduled">${info.delta}d left</span>`;
 }
@@ -4395,21 +4441,26 @@ function reviewCornerRibbon(m) {
 function reviewLiveBanner(m) {
   const info = reviewInfo(m);
   const isOverdue = info.delta !== null && info.delta < 0;
+  const isLocked  = info.delta === 0;
   const day = info.due ? info.due.getDate() : '?';
   const month = info.due ? info.due.toLocaleDateString('en-US', {month: 'short'}) : '';
   const dow = info.due ? info.due.toLocaleDateString('en-US', {weekday: 'short'}) : '';
-  const chipText = info.delta === null ? 'NO DATE' : (isOverdue ? `${Math.abs(info.delta)}D LATE` : (info.delta === 0 ? 'TODAY' : `${info.delta}D LEFT`));
-  const cls = info.delta === null ? 'no-date active' : (isOverdue ? 'overdue' : 'active');
-  const headline = info.delta === null ? 'AWAITING REVIEW' : (isOverdue ? 'REVIEW WINDOW CLOSED' : 'REVIEW IN PROGRESS');
+  const chipText = info.delta === null ? 'NO DATE' : (isOverdue ? `${Math.abs(info.delta)}D LATE` : (isLocked ? 'LOCKED' : `${info.delta}D LEFT`));
+  const calCls = info.delta === null ? 'no-date active' : (isOverdue ? 'overdue' : (isLocked ? 'locked' : 'active'));
+  const cdCls  = isOverdue ? 'overdue' : (isLocked ? 'locked' : '');
+  const headline = info.delta === null ? 'AWAITING REVIEW' : (isOverdue ? 'REVIEW WINDOW CLOSED' : (isLocked ? 'REVIEW WINDOW CLOSES TODAY' : 'REVIEW IN PROGRESS'));
   const detail = info.delta === null
     ? 'This module is with stakeholders but no due date has been set.'
     : (isOverdue
         ? `Was due <strong>${fmtDate(info.due)}</strong> — ${Math.abs(info.delta)} business day${Math.abs(info.delta) === 1 ? '' : 's'} ago. Follow up with reviewers.`
-        : `Reviewers have until <strong>${fmtDate(info.due)}</strong>${info.delta > 0 ? ` (${info.delta} business day${info.delta === 1 ? '' : 's'} left)` : ''}.`);
+        : (isLocked
+            ? `Final day of the review window (<strong>${fmtDate(info.due)}</strong>). Reviewers must return feedback today.`
+            : `Reviewers have until <strong>${fmtDate(info.due)}</strong>${info.delta > 0 ? ` (${info.delta} business day${info.delta === 1 ? '' : 's'} left)` : ''}.`));
+  const headlineIcon = isLocked ? '🔒' : '👁️';
   return `
-    <div class="review-countdown ${isOverdue ? 'overdue' : ''}">
+    <div class="review-countdown ${cdCls}">
       <div class="rc-glass">
-        <div class="review-calendar rc-md ${cls}">
+        <div class="review-calendar rc-md ${calCls}">
           <div class="rcal-page">
             <div class="rcal-month">${month || 'TBD'}</div>
             <div class="rcal-day">${day}</div>
@@ -4421,7 +4472,7 @@ function reviewLiveBanner(m) {
         </div>
       </div>
       <div class="rc-body">
-        <div class="rc-headline"><span class="rc-eye">👁️</span>${headline}${info.override ? '<span class="rc-override">custom date</span>' : ''}</div>
+        <div class="rc-headline"><span class="rc-eye">${headlineIcon}</span>${headline}${info.override ? '<span class="rc-override">custom date</span>' : ''}</div>
         <div class="rc-detail">${detail}</div>
         <div class="rc-actions">
           <button class="rc-mark-complete" onclick="event.stopPropagation(); markReviewComplete('${m.id}')">✔ Mark Review Complete</button>
