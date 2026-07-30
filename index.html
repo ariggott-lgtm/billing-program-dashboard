@@ -81,6 +81,20 @@
   --st-cn-bg: #EED7D7;
   --st-cn-border: #9E4A4A;
   --st-cn-text: #582020;
+  /* Revisions rounds — warm orange progression, deepening with each round */
+  --st-r1-bg: #FFE0C2;
+  --st-r1-border: #FF8300;
+  --st-r1-text: #6B3300;
+  --st-r2-bg: #FFD1A3;
+  --st-r2-border: #E56A00;
+  --st-r2-text: #5C2A00;
+  --st-r3-bg: #FFBF85;
+  --st-r3-border: #CC5500;
+  --st-r3-text: #4D1F00;
+  /* Final Review — bold red, signals last chance */
+  --st-fr-bg: #FFD6CC;
+  --st-fr-border: #D31E1E;
+  --st-fr-text: #7A0F0F;
 
   /* Capacity heat-map */
   --cap-low: #B8C2DD;
@@ -590,6 +604,10 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
 .status-pill.cp { background: var(--st-cp-bg); color: var(--st-cp-text); border-color: var(--st-cp-border); }
 .status-pill.oh { background: var(--st-oh-bg); color: var(--st-oh-text); border-color: var(--st-oh-border); }
 .status-pill.cn { background: var(--st-cn-bg); color: var(--st-cn-text); border-color: var(--st-cn-border); text-decoration: line-through; text-decoration-color: rgba(88,32,32,0.55); text-decoration-thickness: 1.5px; }
+.status-pill.r1 { background: var(--st-r1-bg); color: var(--st-r1-text); border-color: var(--st-r1-border); }
+.status-pill.r2 { background: var(--st-r2-bg); color: var(--st-r2-text); border-color: var(--st-r2-border); }
+.status-pill.r3 { background: var(--st-r3-bg); color: var(--st-r3-text); border-color: var(--st-r3-border); }
+.status-pill.fr { background: var(--st-fr-bg); color: var(--st-fr-text); border-color: var(--st-fr-border); font-weight: 800; }
 .status-pill.clickable {
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
@@ -612,7 +630,15 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
 .module-card.st-oh { border-left-color: var(--st-oh-border); background: linear-gradient(90deg, rgba(155,123,58,0.05) 0%, rgba(255,255,255,0) 40%); }
 .module-card.st-cn { border-left-color: var(--st-cn-border); opacity: 0.72; }
 .module-card.st-cn .module-title { text-decoration: line-through; text-decoration-color: rgba(158,74,74,0.55); }
+.module-card.st-r1 { border-left-color: var(--st-r1-border); background: linear-gradient(90deg, rgba(255,131,0,0.06) 0%, rgba(255,255,255,0) 40%); }
+.module-card.st-r2 { border-left-color: var(--st-r2-border); background: linear-gradient(90deg, rgba(229,106,0,0.07) 0%, rgba(255,255,255,0) 40%); }
+.module-card.st-r3 { border-left-color: var(--st-r3-border); background: linear-gradient(90deg, rgba(204,85,0,0.08) 0%, rgba(255,255,255,0) 40%); }
+.module-card.st-fr { border-left-color: var(--st-fr-border); background: linear-gradient(90deg, rgba(211,30,30,0.06) 0%, rgba(255,255,255,0) 40%); }
 .compact-row.st-cp { border-left-color: var(--st-cp-border); }
+.compact-row.st-r1 { border-left-color: var(--st-r1-border); }
+.compact-row.st-r2 { border-left-color: var(--st-r2-border); }
+.compact-row.st-r3 { border-left-color: var(--st-r3-border); }
+.compact-row.st-fr { border-left-color: var(--st-fr-border); }
 .compact-row.st-rv { border-left-color: var(--st-rv-border); }
 .compact-row.st-ip { border-left-color: var(--st-ip-border); }
 .compact-row.st-ns { border-left-color: var(--st-ns-border); }
@@ -631,6 +657,10 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
 .day-card-completion-pip.ns { background: var(--st-ns-border); opacity: 0.5; }
 .day-card-completion-pip.oh { background: var(--st-oh-border); }
 .day-card-completion-pip.cn { background: var(--st-cn-border); opacity: 0.55; }
+.day-card-completion-pip.r1 { background: var(--st-r1-border); }
+.day-card-completion-pip.r2 { background: var(--st-r2-border); }
+.day-card-completion-pip.r3 { background: var(--st-r3-border); }
+.day-card-completion-pip.fr { background: var(--st-fr-border); }
 .day-completion-row {
   display: flex;
   align-items: center;
@@ -1048,6 +1078,19 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
 .route-day-mod.st-ns { border-left: 3px solid rgba(255,255,255,0.20); }
 .route-day-mod.st-oh { border-left: 3px solid #B8934A; }
 .route-day-mod.st-cn { border-left: 3px solid #B36565; opacity: 0.72; }
+.route-day-mod.st-r1 { border-left: 3px solid #FF8300; }
+.route-day-mod.st-r2 { border-left: 3px solid #E56A00; }
+.route-day-mod.st-r3 { border-left: 3px solid #CC5500; }
+.route-day-mod.st-fr {
+  border-left: 4px solid #D31E1E;
+  background: linear-gradient(90deg, rgba(211,30,30,0.14) 0%, rgba(211,30,30,0.02) 60%);
+  box-shadow: 0 0 0 1px rgba(211,30,30,0.35), 0 4px 14px rgba(211,30,30,0.18);
+  animation: finalReviewPulse 2.4s ease-in-out infinite;
+}
+@keyframes finalReviewPulse {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(211,30,30,0.35), 0 4px 14px rgba(211,30,30,0.18); }
+  50%      { box-shadow: 0 0 0 2px rgba(253,95,70,0.55), 0 6px 20px rgba(211,30,30,0.30); }
+}
 .rdm-title {
   color: rgba(255,255,255,0.92);
   white-space: nowrap;
@@ -1075,6 +1118,21 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
 .rdm-status.st-ns { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.60); }
 .rdm-status.st-oh { background: rgba(184,147,74,0.22); color: #E0BF7B; }
 .rdm-status.st-cn { background: rgba(179,101,101,0.22); color: #E8A6A6; text-decoration: line-through; text-decoration-thickness: 1px; }
+.rdm-status.st-r1 { background: rgba(255,131,0,0.22);  color: #FFB870; }
+.rdm-status.st-r2 { background: rgba(229,106,0,0.26);  color: #FFA560; }
+.rdm-status.st-r3 { background: rgba(204,85,0,0.30);   color: #FF9048; }
+.rdm-status.st-fr {
+  background: rgba(211,30,30,0.32);
+  color: #FFD6CC;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  border: 1px solid rgba(253,95,70,0.65);
+  animation: rdmFrPulse 1.8s ease-in-out infinite;
+}
+@keyframes rdmFrPulse {
+  0%, 100% { background: rgba(211,30,30,0.32); box-shadow: 0 0 0 0 rgba(253,95,70,0.0); }
+  50%      { background: rgba(211,30,30,0.48); box-shadow: 0 0 0 3px rgba(253,95,70,0.30); }
+}
 .rdm-mins {
   font-size: 10px;
   color: rgba(255,255,255,0.55);
@@ -1214,6 +1272,35 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
 .handoff-row.locked:hover { opacity: 0.92; filter: grayscale(0.4); }
 .handoff-row.locked .hr-days { color: rgba(255,255,255,0.75); }
 .handoff-row.locked .hr-days-label { color: rgba(255,255,255,0.55); }
+.handoff-row.final {
+  border-left-color: #D31E1E;
+  background: linear-gradient(90deg, rgba(211,30,30,0.14), rgba(211,30,30,0.02) 60%);
+  animation: handoffFinalPulse 2s ease-in-out infinite;
+}
+.handoff-row.final.overdue {
+  animation: handoffFinalOverduePulse 1.4s ease-in-out infinite;
+}
+@keyframes handoffFinalPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(211,30,30,0.35); }
+  50%      { box-shadow: 0 0 0 5px rgba(211,30,30,0.14); }
+}
+@keyframes handoffFinalOverduePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(211,30,30,0.55); }
+  50%      { box-shadow: 0 0 0 6px rgba(253,95,70,0.22); }
+}
+.hr-final-tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: rgba(211,30,30,0.85);
+  color: #FFF;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  vertical-align: middle;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.3);
+}
 
 .hr-icon {
   width: 40px; height: 40px;
@@ -1681,11 +1768,39 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
     linear-gradient(90deg, rgba(255,244,204,0.55), rgba(255,255,255,0.72) 40%);
   animation: reviewAura 3.6s ease-in-out infinite;
 }
+.module-card.st-fr {
+  position: relative;
+  overflow: hidden;
+  border-left-color: #D31E1E !important;
+  background:
+    linear-gradient(90deg, rgba(255,214,204,0.60), rgba(255,255,255,0.75) 40%);
+  animation: reviewAuraFinal 2.6s ease-in-out infinite;
+}
+@keyframes reviewAuraFinal {
+  0%, 100% {
+    box-shadow:
+      0 6px 24px rgba(38, 55, 70, 0.08),
+      0 0 0 0 rgba(211, 30, 30, 0.65),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  }
+  50% {
+    box-shadow:
+      0 10px 34px rgba(211, 30, 30, 0.30),
+      0 0 0 8px rgba(211, 30, 30, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+}
 .module-card.st-rv .module-card-header,
 .module-card.st-rv .module-body,
-.module-card.st-rv .comments-section {
+.module-card.st-rv .comments-section,
+.module-card.st-fr .module-card-header,
+.module-card.st-fr .module-body,
+.module-card.st-fr .comments-section {
   position: relative;
   z-index: 1;
+}
+.module-card.st-fr:hover {
+  animation-play-state: paused;
 }
 @keyframes reviewAura {
   0%, 100% {
@@ -1746,6 +1861,20 @@ main { padding: 32px; max-width: 1440px; margin: 0 auto; }
   background: linear-gradient(135deg, #FFB4A1 0%, #FD5F46 50%, #8A1F1F 100%);
   color: #FFF;
   text-shadow: 0 1px 0 rgba(0,0,0,0.35);
+}
+.review-corner-ribbon.final {
+  background: linear-gradient(135deg, #FF9E85 0%, #D31E1E 50%, #6B0F0F 100%);
+  color: #FFF;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.4);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+}
+.review-corner-ribbon.final.overdue {
+  background: linear-gradient(135deg, #FFDC5E 0%, #FD5F46 40%, #6B0F0F 100%);
+}
+.review-corner-ribbon.final::before,
+.review-corner-ribbon.final::after {
+  border-top-color: #3A0808;
 }
 .review-corner-ribbon::before,
 .review-corner-ribbon::after {
@@ -3387,6 +3516,10 @@ body.stakeholder .compact-row .drag-handle { display: none; }
           <option value="ns">Not Started</option>
           <option value="ip">In Development</option>
           <option value="rv">In Review</option>
+          <option value="r1">Revisions 1</option>
+          <option value="r2">Revisions 2</option>
+          <option value="r3">Revisions 3</option>
+          <option value="fr">Final Review</option>
           <option value="cp">Complete</option>
           <option value="oh">On Hold</option>
           <option value="cn">Cancelled</option>
@@ -3658,13 +3791,13 @@ function showView(v) {
 
 // ===== STATUS =====
 function getStatus(m) {
-  if (m.st && ['ns','ip','rv','cp','oh','cn'].includes(m.st)) return m.st;
+  if (m.st && ['ns','ip','rv','r1','r2','r3','fr','cp','oh','cn'].includes(m.st)) return m.st;
   if (m.dr === 0) return 'cp';
   if (m.dr === 1) return 'ns';
   return 'ns';
 }
 function statusLabel(s) {
-  return {ns:'Not Started', ip:'In Development', rv:'In Review', cp:'Complete', oh:'On Hold', cn:'Cancelled'}[s] || s;
+  return {ns:'Not Started', ip:'In Development', rv:'In Review', r1:'Revisions 1', r2:'Revisions 2', r3:'Revisions 3', fr:'Final Review', cp:'Complete', oh:'On Hold', cn:'Cancelled'}[s] || s;
 }
 function stageKey(m) {
   if (m.stage) return m.stage;
@@ -3700,21 +3833,30 @@ function statusPillClickable(m) {
   return `<span class="status-pill ${s} clickable" title="Click to cycle status" onclick="event.stopPropagation(); cycleStatus('${m.id}')"><span class="dot"></span>${statusLabel(s)}</span>`;
 }
 function cycleStatus(id) {
-  const cycle = {ns:'ip', ip:'rv', rv:'cp', cp:'ns', oh:'ip', cn:'ns'};
+  // Linear flow: Not Started → In Development → In Review → Revisions 1 →
+  // Revisions 2 → Revisions 3 → Final Review → Complete → (loop). oh and cn
+  // rejoin the flow at In Development / Not Started respectively.
+  const cycle = {ns:'ip', ip:'rv', rv:'r1', r1:'r2', r2:'r3', r3:'fr', fr:'cp', cp:'ns', oh:'ip', cn:'ns'};
   const m = modules.find(x => x.id === id);
   if (!m) return;
   const cur = getStatus(m);
   const next = cycle[cur] || 'ns';
   overlays.edits[id] = overlays.edits[id] || {};
   overlays.edits[id].st = next;
-  // When flipping to In Review, stamp today's date as "sent" so the review
-  // window auto-populates (sent + 5 biz days = due). Only set if not already there.
-  if (next === 'rv') {
-    const merged = Object.assign({}, m, overlays.edits[id]);
-    if (!merged.dend) {
-      const t = new Date();
-      const iso = t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0');
+  // When flipping into any stakeholder-facing review state (rv or fr), stamp
+  // today's date as "sent" so the review window auto-populates
+  // (sent + 5 biz days = due). fr resets the window since it's a new review round.
+  if (next === 'rv' || next === 'fr') {
+    const t = new Date();
+    const iso = t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0');
+    if (next === 'fr') {
+      // Final Review is a fresh review window — always restamp and clear any
+      // manual close-date override so the 5-business-day auto-window applies.
       overlays.edits[id].dend = iso;
+      overlays.edits[id].revclose = '';
+    } else {
+      const merged = Object.assign({}, m, overlays.edits[id]);
+      if (!merged.dend) overlays.edits[id].dend = iso;
     }
   }
   saveOverlays();
@@ -3747,10 +3889,11 @@ function renderOverview() {
   const total = modules.length;
   const totalMins = modules.reduce((s, m) => s + m.m, 0);
   const totalHours = (totalMins / 60).toFixed(1);
-  const statusCounts = {ns:0, ip:0, rv:0, cp:0, oh:0, cn:0};
+  const statusCounts = {ns:0, ip:0, rv:0, r1:0, r2:0, r3:0, fr:0, cp:0, oh:0, cn:0};
   modules.forEach(m => statusCounts[getStatus(m)]++);
   const cpPct = total ? Math.round((statusCounts.cp / total) * 100) : 0;
-  const ipRv = statusCounts.ip + statusCounts.rv;
+  // In-flight = anything actively being worked on or reviewed (not started/hold/cancel/done are excluded)
+  const ipRv = statusCounts.ip + statusCounts.rv + statusCounts.r1 + statusCounts.r2 + statusCounts.r3 + statusCounts.fr;
 
   document.getElementById('kpiRow').innerHTML = `
     <div class="kpi">
@@ -3814,7 +3957,7 @@ function renderDayCard(day) {
   const ds = dayStatus(mins);
   const capCls = capacityClass(mins);
   const week = day <= 5 ? 1 : 2;
-  const counts = {ns:0, ip:0, rv:0, cp:0, oh:0, cn:0};
+  const counts = {ns:0, ip:0, rv:0, r1:0, r2:0, r3:0, fr:0, cp:0, oh:0, cn:0};
   dayMods.forEach(m => counts[getStatus(m)]++);
   const totalCount = dayMods.length;
   const cpCount = counts.cp;
@@ -3912,21 +4055,23 @@ function renderTracker() {
   const perDay = days.map(d => {
     const dayMods = modules.filter(m => m.d === d);
     const total = dayMods.length || 1;
-    const counts = {ns:0, ip:0, rv:0, cp:0, oh:0, cn:0};
+    const counts = {ns:0, ip:0, rv:0, r1:0, r2:0, r3:0, fr:0, cp:0, oh:0, cn:0};
     dayMods.forEach(m => counts[getStatus(m)]++);
+    const inFlight = counts.ip + counts.rv + counts.r1 + counts.r2 + counts.r3 + counts.fr;
     const cpPct = (counts.cp / total) * 100;
-    const ipRvPct = ((counts.ip + counts.rv) / total) * 100;
+    const ipRvPct = (inFlight / total) * 100;
     let cls = 'pending', pill = 'pending', pillLabel = 'Not Started';
     if (counts.cp === total) { cls = 'done'; pill = 'done'; pillLabel = 'Complete'; }
-    else if (counts.cp + counts.ip + counts.rv > 0) { cls = 'active'; pill = 'active'; pillLabel = 'In Progress'; }
+    else if (counts.cp + inFlight > 0) { cls = 'active'; pill = 'active'; pillLabel = 'In Progress'; }
     return {d, total, counts, cpPct, ipRvPct, cls, pill, pillLabel};
   });
 
   const totalMods = modules.length;
-  const overallCounts = {ns:0, ip:0, rv:0, cp:0, oh:0, cn:0};
+  const overallCounts = {ns:0, ip:0, rv:0, r1:0, r2:0, r3:0, fr:0, cp:0, oh:0, cn:0};
   modules.forEach(m => overallCounts[getStatus(m)]++);
+  const overallInFlight = overallCounts.ip + overallCounts.rv + overallCounts.r1 + overallCounts.r2 + overallCounts.r3 + overallCounts.fr;
   const overallCpPct = totalMods ? (overallCounts.cp / totalMods) * 100 : 0;
-  const overallIpRvPct = totalMods ? ((overallCounts.ip + overallCounts.rv) / totalMods) * 100 : 0;
+  const overallIpRvPct = totalMods ? (overallInFlight / totalMods) * 100 : 0;
   const overallProgressPct = Math.round(overallCpPct + overallIpRvPct);
   const overallCpRounded = Math.round(overallCpPct);
 
@@ -4004,8 +4149,10 @@ function renderTracker() {
   }).join('');
 
   // ===== THE HANDOFF — modules currently with stakeholders =====
+  // Includes both In Review (rv) and Final Review (fr) modules, since both
+  // are actively sitting with stakeholders and need the same visibility.
   const reviewMods = modules
-    .filter(m => getStatus(m) === 'rv')
+    .filter(m => { const s = getStatus(m); return s === 'rv' || s === 'fr'; })
     .map(m => ({m, info: reviewInfo(m)}))
     .sort((a, b) => {
       const aOver = a.info.delta !== null && a.info.delta < 0;
@@ -4041,7 +4188,8 @@ function renderTracker() {
       daysBig = info.delta;
       daysLabel = `day${info.delta === 1 ? '' : 's'} left`;
     }
-    const icon = isOverdue ? '⚠' : (isNoDate ? '?' : (isLocked ? '🔒' : '🚀'));
+    const isFinal = getStatus(m) === 'fr';
+    const icon = isOverdue ? '⚠' : (isNoDate ? '?' : (isLocked ? '🔒' : (isFinal ? '🚨' : '🚀')));
     let trackHtml;
     if (isNoDate) {
       trackHtml = `<div class="hr-track"><div class="hr-track-empty">No sent or due date on record</div></div>`;
@@ -4083,12 +4231,13 @@ function renderTracker() {
         </div>
       `;
     }
+    const finalTag = isFinal ? '<span class="hr-final-tag">FINAL · LAST CHANCE</span>' : '';
     return `
-      <div class="handoff-row ${cls}" onclick="goToModule('${m.id}', ${m.d})" title="Jump to ${esc(m.n)}">
+      <div class="handoff-row ${cls} ${isFinal ? 'final' : ''}" onclick="goToModule('${m.id}', ${m.d})" title="Jump to ${esc(m.n)}">
         <div class="hr-icon">${icon}</div>
         <div class="hr-main">
           <div class="hr-day-badge">Day ${m.d}</div>
-          <div class="hr-title">${esc(m.n)}</div>
+          <div class="hr-title">${esc(m.n)}${finalTag}</div>
           <div class="hr-meta">${stageChip(m)}</div>
         </div>
         ${trackHtml}
@@ -4103,7 +4252,7 @@ function renderTracker() {
   const handoffEmpty = `
     <div class="handoff-empty">
       <div class="handoff-empty-title">🚀 Nothing with stakeholders right now</div>
-      <div class="handoff-empty-sub">When a module moves to <strong>In Review</strong>, it lands here so you can see the review window at a glance and follow up before dates slip.</div>
+      <div class="handoff-empty-sub">When a module moves to <strong>In Review</strong> or <strong>Final Review</strong>, it lands here so you can see the review window at a glance and follow up before dates slip.</div>
     </div>
   `;
 
@@ -4138,8 +4287,8 @@ function renderTracker() {
         </div>
         <div class="route-metric">
           <div class="route-metric-label">In Flight</div>
-          <div class="route-metric-value ip">${overallCounts.ip + overallCounts.rv}</div>
-          <div class="route-metric-sub">${overallCounts.ip} dev · ${overallCounts.rv} review</div>
+          <div class="route-metric-value ip">${overallInFlight}</div>
+          <div class="route-metric-sub">${overallCounts.ip} dev · ${overallCounts.rv} review · ${overallCounts.r1 + overallCounts.r2 + overallCounts.r3} revising · ${overallCounts.fr} final</div>
         </div>
         <div class="route-metric">
           <div class="route-metric-label">Not Started</div>
@@ -4202,7 +4351,7 @@ function renderDay() {
     const st = getStatus(m);
     const info = reviewInfo(m);
     return `
-    <div class="module-card st-${st} ${st === 'rv' && info.delta !== null && info.delta < 0 ? 'rv-overdue' : ''} ${stageClass(m)} ${m._base ? '' : 'draft'}" data-id="${m.id}" ondragover="event.preventDefault(); this.classList.add('drag-over');" ondragleave="this.classList.remove('drag-over');" ondrop="commitReorder(event, '${m.id}', ${m.d});">
+    <div class="module-card st-${st} ${(st === 'rv' || st === 'fr') && info.delta !== null && info.delta < 0 ? 'rv-overdue' : ''} ${stageClass(m)} ${m._base ? '' : 'draft'}" data-id="${m.id}" ondragover="event.preventDefault(); this.classList.add('drag-over');" ondragleave="this.classList.remove('drag-over');" ondrop="commitReorder(event, '${m.id}', ${m.d});">
       <div class="module-card-header">
         <span class="drag-handle editor-only" draggable="true" ondragstart="dragSrcId='${m.id}'; event.dataTransfer.effectAllowed='move';" title="Drag to reorder">⋮⋮</span>
         <div class="module-title">${esc(m.n)}${m._base ? '' : ' <span style="color:var(--draft-border);font-size:11px;font-weight:600;">DRAFT</span>'}</div>
@@ -4217,7 +4366,7 @@ function renderDay() {
           </div>
         </div>
       </div>
-      ${st === 'rv' ? reviewLiveBanner(m) : ''}
+      ${(st === 'rv' || st === 'fr') ? reviewLiveBanner(m) : ''}
       <div class="module-body">
         ${m.o ? `<div class="module-field"><strong>Learner Outcome</strong><div class="field-content">${esc(m.o)}</div></div>` : ''}
         ${m.dec ? `<div class="module-field"><strong>Decisions to Make</strong><div class="field-content">${esc(m.dec)}</div></div>` : ''}
@@ -4402,9 +4551,10 @@ function reviewInfo(m) {
   let due = null;
   if (m.revclose) due = new Date(m.revclose + 'T12:00:00');
   else if (m.dend) due = addBusinessDays(m.dend, 5);
-  // Defensive fallback: an rv module with no sent date (legacy overlay state)
+  // Defensive fallback: any review-state module (rv or fr) with no sent date
   // still needs a review window. Treat today as sent so the bar renders.
-  if (!sent && getStatus(m) === 'rv') {
+  const st = getStatus(m);
+  if (!sent && (st === 'rv' || st === 'fr')) {
     const t = new Date();
     const iso = t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0');
     sent = new Date(iso + 'T12:00:00');
@@ -4419,24 +4569,30 @@ function reviewInfo(m) {
   return {sent, due, delta, bizTotal, bizFilled, bizOverdue, override: !!m.revclose};
 }
 function reviewBadge(m) {
-  if (getStatus(m) === 'cp') {
+  const st = getStatus(m);
+  if (st === 'cp') {
     if (m.dend) return `<span class="review-badge rb-done">✓ ${fmtDate(m.dend)}</span>`;
     return '';
   }
-  if (getStatus(m) !== 'rv') return '';
+  if (st !== 'rv' && st !== 'fr') return '';
   const info = reviewInfo(m);
-  if (!info.due) return '<span class="review-badge rb-scheduled">no date</span>';
+  const finalTag = st === 'fr' ? 'FINAL · ' : '';
+  if (!info.due) return `<span class="review-badge rb-scheduled">${finalTag}no date</span>`;
   if (info.delta === null) return '';
-  if (info.delta < 0) return `<span class="review-badge rb-overdue">${Math.abs(info.delta)}d overdue</span>`;
-  if (info.delta === 0) return `<span class="review-badge rb-locked">🔒 closes today</span>`;
-  if (info.delta === 1) return `<span class="review-badge rb-soon">due tmrw</span>`;
-  if (info.delta <= 3) return `<span class="review-badge rb-soon">${info.delta}d left</span>`;
-  return `<span class="review-badge rb-scheduled">${info.delta}d left</span>`;
+  if (info.delta < 0) return `<span class="review-badge rb-overdue">${finalTag}${Math.abs(info.delta)}d overdue</span>`;
+  if (info.delta === 0) return `<span class="review-badge rb-locked">🔒 ${finalTag}closes today</span>`;
+  if (info.delta === 1) return `<span class="review-badge rb-soon">${finalTag}due tmrw</span>`;
+  if (info.delta <= 3) return `<span class="review-badge rb-soon">${finalTag}${info.delta}d left</span>`;
+  return `<span class="review-badge rb-scheduled">${finalTag}${info.delta}d left</span>`;
 }
 function reviewCornerRibbon(m) {
   const info = reviewInfo(m);
   const isOverdue = info.delta !== null && info.delta < 0;
-  return `<div class="review-corner-ribbon ${isOverdue ? 'overdue' : ''}">${isOverdue ? 'REVIEW OVERDUE' : 'IN REVIEW'}</div>`;
+  const isFinal = getStatus(m) === 'fr';
+  let label;
+  if (isFinal) label = isOverdue ? 'FINAL REVIEW · OVERDUE' : 'FINAL REVIEW · LAST CHANCE';
+  else         label = isOverdue ? 'REVIEW OVERDUE' : 'IN REVIEW';
+  return `<div class="review-corner-ribbon ${isOverdue ? 'overdue' : ''} ${isFinal ? 'final' : ''}">${label}</div>`;
 }
 function reviewLiveBanner(m) {
   const info = reviewInfo(m);
